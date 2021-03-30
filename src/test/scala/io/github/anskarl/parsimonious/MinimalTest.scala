@@ -2,35 +2,34 @@ package io.github.anskarl.parsimonious
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.types.StructType
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
-
-import scala.collection.JavaConverters._
+import io.github.anskarl.parsimonious.Converters._
 
 class MinimalTest extends AnyWordSpecLike with DataFrameSuiteBase with Matchers {
 
   "Basic encode/decode functionality" should {
     "encode/decode Thrift class to Spark Rows" in {
 
-      val sparkSchema: StructType = ThriftRowConverter.extractSchema(classOf[ComplexDummy])
-      val basicDummy = new BasicDummy().setReqStr("req").setInt32(42)
-      val complexDummy = new ComplexDummy().setBdList(List(basicDummy).asJava)
+      val sparkSchema: StructType = ThriftRowConverter.extractSchema(classOf[BasicDummy])
 
-      val inputList = List(complexDummy, complexDummy)
+      val exampleData =
+        for (index <- 1 to 100)
+          yield new BasicDummy().setReqStr(s"index: ${index}").setInt32(index).setBl(index % 10 == 0)
 
-
-      val rowSeq: Seq[Row] = inputList.map(ThriftRowConverter.convert(_))
+      val rowSeq: Seq[Row] = exampleData.map(_.toRow)
       val rowRDD: RDD[Row] = spark.sparkContext.parallelize(rowSeq)
-      val df = spark.createDataFrame(rowRDD, sparkSchema)
-      val dfRows = df.collect()
+      val df: DataFrame = spark.createDataFrame(rowRDD, sparkSchema)
+
+      val dfRows: Array[Row] = df.collect()
 
       val decodedInputList = dfRows
-        .map(RowThriftConverter.convert(classOf[ComplexDummy], _))
+        .map(row => row.as(classOf[BasicDummy]))
         .toList
 
-      decodedInputList mustEqual inputList
+      decodedInputList mustEqual exampleData
     }
   }
 }

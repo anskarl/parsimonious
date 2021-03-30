@@ -1,4 +1,3 @@
-
 import sbt._
 import sbt.Keys._
 import com.intenthq.sbt.ThriftPlugin._

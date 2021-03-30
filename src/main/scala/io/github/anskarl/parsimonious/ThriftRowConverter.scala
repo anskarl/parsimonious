@@ -11,10 +11,6 @@ import org.apache.thrift.{ TBase, TFieldIdEnum, TFieldRequirementType, TSerializ
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
-/**
-  *
-  * The implementation is based on https://github.com/airbnb/airbnb-spark-thrift/tree/nwparker/convV2 (Apache 2 license)
-  */
 object ThriftRowConverter {
 
   private val keyName = "key"

@@ -9,10 +9,6 @@ import org.apache.thrift.{ TBase, TDeserializer, TFieldIdEnum }
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
-/**
-  *
-  * The implementation is based on https://github.com/airbnb/airbnb-spark-thrift/tree/nwparker/convV2 (Apache 2 license)
-  */
 object RowThriftConverter {
 
   private val DefaultTCompactProtocolDeserializer = new TDeserializer(new TCompactProtocol.Factory())

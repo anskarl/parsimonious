@@ -1,0 +1,20 @@
+*.class
+*.log
+
+target/
+
+.idea/
+*.iml
+.vscode
+.metal
+.bsp
+
+.ensime*
+
+
+# Various files
+*~
+*.log
+*.class
+.DS_Store
+._*

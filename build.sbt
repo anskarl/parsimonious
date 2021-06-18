@@ -20,6 +20,7 @@ lazy val root = Project("parsimonious", file("."))
   .settings(libraryDependencies += Dependencies.UtilBackports)
   .settings(libraryDependencies += Dependencies.ScalaCheck)
   .settings(libraryDependencies += Dependencies.Jackson)
+  .settings(libraryDependencies += Dependencies.ScalaCollectionCompat)
   .settings(
     Thrift / thrift := s"docker run --rm  -v ${file(".").getAbsoluteFile.toString}:${file(".").getAbsoluteFile.toString} --workdir ${file(".").getAbsoluteFile.toString} anskarl/thrift:0.10.0 ",
     Thrift / thriftSourceDir := file("."),

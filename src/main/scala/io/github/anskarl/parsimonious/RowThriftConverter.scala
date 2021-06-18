@@ -140,11 +140,11 @@ object RowThriftConverter {
 
       // Base Cases
       case TType.ENUM      => UnsafeThriftHelpers.enumOf(meta, elm.asInstanceOf[String])
-      case TType.BYTE      => new java.lang.Byte(elm.asInstanceOf[java.lang.Number].byteValue())
-      case TType.I16       => new java.lang.Short(elm.asInstanceOf[java.lang.Number].shortValue())
-      case TType.I32       => new java.lang.Integer(elm.asInstanceOf[java.lang.Number].intValue())
-      case TType.I64       => new java.lang.Long(elm.asInstanceOf[java.lang.Number].longValue())
-      case TType.DOUBLE    => new java.lang.Double(elm.asInstanceOf[java.lang.Number].doubleValue())
+      case TType.BYTE      => java.lang.Byte.valueOf(elm.asInstanceOf[java.lang.Number].byteValue())
+      case TType.I16       => java.lang.Short.valueOf(elm.asInstanceOf[java.lang.Number].shortValue())
+      case TType.I32       => java.lang.Integer.valueOf(elm.asInstanceOf[java.lang.Number].intValue())
+      case TType.I64       => java.lang.Long.valueOf(elm.asInstanceOf[java.lang.Number].longValue())
+      case TType.DOUBLE    => java.lang.Double.valueOf(elm.asInstanceOf[java.lang.Number].doubleValue())
       case TType.BOOL      => elm.asInstanceOf[java.lang.Boolean]
       case TType.STRING    => elm.asInstanceOf[java.lang.String]
 

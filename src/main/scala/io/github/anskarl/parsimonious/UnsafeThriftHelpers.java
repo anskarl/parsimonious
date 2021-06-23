@@ -6,7 +6,7 @@ import org.apache.thrift.TFieldIdEnum;
 import org.apache.thrift.meta_data.EnumMetaData;
 import org.apache.thrift.meta_data.FieldMetaData;
 import org.apache.thrift.meta_data.FieldValueMetaData;
-import scala.collection.JavaConverters;
+import scala.collection.convert.WrapAsScala$;
 
 /**
  * Some unsafe operations expressed in Java to avoid using `scala.language.existentials` in Scala.
@@ -21,7 +21,8 @@ final class UnsafeThriftHelpers {
         final Map<TFieldIdEnum, FieldMetaData> structMetaDataMap =
                 (Map<TFieldIdEnum, FieldMetaData>) FieldMetaData.getStructMetaDataMap(aClass);
 
-        return JavaConverters.mapAsScalaMap(structMetaDataMap);
+        return WrapAsScala$.MODULE$.mapAsScalaMap(structMetaDataMap);
+        //return JavaConverters.mapAsScalaMap(structMetaDataMap);
 
     }
 

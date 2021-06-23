@@ -2,8 +2,10 @@ import sbt._
 import sbt.Keys._
 import com.intenthq.sbt.ThriftPlugin._
 
+
 lazy val root = Project("parsimonious", file("."))
   .settings(scalaVersion := "2.12.12")
+  .settings(crossScalaVersions := Seq("2.11.12", "2.12.12"))
   .settings(resolvers += ("Twitter Maven Repo" at "http://maven.twttr.com").withAllowInsecureProtocol(true))
   .settings(
     fork in Test := true,
@@ -27,5 +29,8 @@ lazy val root = Project("parsimonious", file("."))
     Thrift / thriftJavaOptions += s" -I ${(file(".") / "src" / "test"/ "thrift").getPath}",
     dependencyOverrides += "org.apache.thrift" % "libthrift" % Dependencies.v.Thrift,
     dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-core" % Dependencies.v.Jackson,
-    dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-databind" % Dependencies.v.Jackson
+    dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-databind" % Dependencies.v.Jackson,
+    githubOwner := "anskarl",
+    githubRepository := "parsimonious",
+    githubTokenSource := TokenSource.GitConfig("github.token")
   )

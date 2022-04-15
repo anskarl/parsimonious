@@ -15,5 +15,5 @@ package object json {
   private[json] final val DefaultTCompactProtocolSerializer = new TSerializer(new TCompactProtocol.Factory())
 
   private[json] final val mapper = new ObjectMapper().registerModule(DefaultScalaModule)
-  
+
 }

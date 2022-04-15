@@ -2,7 +2,6 @@ package io.github.anskarl.parsimonious.json
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import io.github.anskarl.parsimonious.{BasicDummy, EnumDummy, NestedDummy, PropertyValue}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
@@ -10,7 +9,7 @@ import org.scalatest.wordspec.AnyWordSpecLike
 import scala.util.chaining.scalaUtilChainingOps
 import scala.collection.JavaConverters._
 
-class MinimalJsonTest extends AnyWordSpecLike with DataFrameSuiteBase with Matchers {
+class MinimalJsonTest extends AnyWordSpecLike  with Matchers {
   private val mapper = new ObjectMapper().registerModule(DefaultScalaModule)
   private val sampleJson = s"""
       |{

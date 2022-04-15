@@ -44,7 +44,12 @@ object Dependencies {
 
     lazy val SparkTestingBase = "com.holdenkarau" %% "spark-testing-base" % v.SparkTestingBase % Test
 
-//    lazy val Jackson = "com.fasterxml.jackson.core" % "jackson-databind" % v.Jackson
+    lazy val Jackson = Seq(
+        "com.fasterxml.jackson.core" % "jackson-core" % "2.13.0",
+        "com.fasterxml.jackson.core" % "jackson-databind" % "2.13.0",
+        "com.fasterxml.jackson.core" % "jackson-annotations" % "2.13.0",
+        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.0"
+    )
 
     lazy val Hadoop = Seq(
         "org.apache.hadoop" % "hadoop-client" % v.Hadoop % Provided,
@@ -69,7 +74,11 @@ object Dependencies {
         "org.slf4j" % "slf4j-api" % v.SLF4J % Test,
         "org.slf4j" % "slf4j-nop" % v.SLF4J % Test,
         "org.scalatest" %% "scalatest" % v.ScalaTest % Test,
-        "org.scalacheck" %% "scalacheck" % v.ScalaCheck % Test,
+        "org.scalacheck" %% "scalacheck" % v.ScalaCheck % Test
+
+    )
+
+    lazy val TestDependenciesSpark = Seq(
         "org.apache.hadoop" % "hadoop-minicluster" % v.Hadoop % Test,
         "org.apache.spark" %% "spark-core" % v.Spark % Test,
         "org.apache.spark" %% "spark-sql" % v.Spark % Test,

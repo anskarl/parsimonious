@@ -5,7 +5,6 @@ import com.intenthq.sbt.ThriftPlugin._
 
 lazy val root = Project("parsimonious", file("."))
   .settings(scalaVersion := "2.12.12")
-  .settings(crossScalaVersions := Seq("2.11.12", "2.12.12"))
   .settings(resolvers += ("Twitter Maven Repo" at "http://maven.twttr.com").withAllowInsecureProtocol(true))
   .settings(
     fork in Test := true,
@@ -21,12 +20,16 @@ lazy val root = Project("parsimonious", file("."))
   .settings(libraryDependencies += Dependencies.ParquetThrift)
   .settings(libraryDependencies += Dependencies.UtilBackports)
   .settings(libraryDependencies += Dependencies.ScalaCheck)
-  .settings(libraryDependencies += Dependencies.Jackson)
   .settings(libraryDependencies += Dependencies.ScalaCollectionCompat)
+  .settings(libraryDependencies += "com.fasterxml.jackson.core" % "jackson-core" % "2.13.0")
+  .settings(libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.13.0")
+  .settings(libraryDependencies += "com.fasterxml.jackson.core" % "jackson-annotations" % "2.13.0")
+  .settings(libraryDependencies += "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.0")
+  .settings(libraryDependencies += Dependencies.JavaXAnnotationApi)
   .settings(
-    Thrift / thrift := s"docker run --rm  -v ${file(".").getAbsoluteFile.toString}:${file(".").getAbsoluteFile.toString} --workdir ${file(".").getAbsoluteFile.toString} anskarl/thrift:0.10.0 ",
+    Thrift / thrift := "thrift", //s"docker run --rm  -v ${file(".").getAbsoluteFile.toString}:${file(".").getAbsoluteFile.toString} --workdir ${file(".").getAbsoluteFile.toString} anskarl/thrift:0.10.0 ",
     Thrift / thriftSourceDir := file("."),
-    Thrift / thriftJavaOptions += s" -I ${(file(".") / "src" / "test"/ "thrift").getPath}",
+    Thrift / thriftJavaOptions += s" -gen java:beans,fullcamel -I ${(file(".") / "src" / "test"/ "thrift").getPath}",
     dependencyOverrides += "org.apache.thrift" % "libthrift" % Dependencies.v.Thrift,
     dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-core" % Dependencies.v.Jackson,
     dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-databind" % Dependencies.v.Jackson,

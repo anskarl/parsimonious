@@ -26,6 +26,7 @@ import org.apache.spark.sql.types.StructType
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row}
 import io.github.anskarl.parsimonious._
+import io.github.anskarl.parsimonious.spark.ThriftRowConverter
 
 // Assume that we have SparkSession initialized as `spark`
 // To extract the schema (i.e., Apache Spark org.apache.spark.sql.types.StructType)

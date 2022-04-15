@@ -8,7 +8,8 @@ object Dependencies {
         final val SparkTestingBase = "2.4.5_0.14.0"
 
         final val Parquet = "1.10.1"
-        final val Thrift = "0.10.0"
+//        final val Thrift = "0.10.0"
+        final val Thrift = "0.13.0"
 
         final val ScalaTest = "3.1.4"
         final val ScalaTestPlus = "3.1.4.0"
@@ -16,10 +17,14 @@ object Dependencies {
 
         final val UtilBackports = "2.1"
         final val SLF4J = "1.7.25"
-        final val Jackson = "2.6.7"
+        final val Jackson = "2.13.0"
 
         final val ScalaCollectionCompat = "2.1.6"
+
+        final val JavaXAnnotationApi = "1.3.2"
     }
+
+    lazy val JavaXAnnotationApi = "javax.annotation" % "javax.annotation-api" % v.JavaXAnnotationApi
 
     lazy val ScalaCollectionCompat = "org.scala-lang.modules" %% "scala-collection-compat" % v.ScalaCollectionCompat
 
@@ -39,7 +44,7 @@ object Dependencies {
 
     lazy val SparkTestingBase = "com.holdenkarau" %% "spark-testing-base" % v.SparkTestingBase % Test
 
-    lazy val Jackson = "com.fasterxml.jackson.core" % "jackson-databind" % v.Jackson
+//    lazy val Jackson = "com.fasterxml.jackson.core" % "jackson-databind" % v.Jackson
 
     lazy val Hadoop = Seq(
         "org.apache.hadoop" % "hadoop-client" % v.Hadoop % Provided,

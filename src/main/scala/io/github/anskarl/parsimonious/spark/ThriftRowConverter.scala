@@ -1,15 +1,15 @@
-package io.github.anskarl.parsimonious
+package io.github.anskarl.parsimonious.spark
 
-import java.nio.ByteBuffer
-
+import io.github.anskarl.parsimonious._
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 import org.apache.thrift.meta_data._
-import org.apache.thrift.protocol.{ TCompactProtocol, TType }
-import org.apache.thrift.{ TBase, TFieldIdEnum, TFieldRequirementType, TSerializer }
+import org.apache.thrift.protocol.{TCompactProtocol, TType}
+import org.apache.thrift.{TBase, TFieldIdEnum, TFieldRequirementType, TSerializer}
 
-import scala.collection.JavaConverters._
+import java.nio.ByteBuffer
 import scala.reflect.ClassTag
+import scala.collection.JavaConverters._
 
 object ThriftRowConverter {
 
@@ -22,9 +22,9 @@ object ThriftRowConverter {
   /**
     * Converts a [[TBaseType]] to a Spark SQL [[Row]]
     */
-  def convert[F <: TFieldIdEnum: ClassTag](
-      instance: TBase[_ <: TBase[_, _], F],
-      thriftSerializer: TSerializer = DefaultTCompactProtocolSerializer
+  def convert[F <: TFieldIdEnum : ClassTag](
+    instance: TBase[_ <: TBase[_, _], F],
+    thriftSerializer: TSerializer = DefaultTCompactProtocolSerializer
   ): Row = {
     val fieldMeta = FieldMetaData
       .getStructMetaDataMap(instance.getClass.asInstanceOf[Class[_ <: TBase[_, _]]])
@@ -57,7 +57,7 @@ object ThriftRowConverter {
       .map {
         case (tFieldIdEnum: TFieldIdEnum, metaData: FieldMetaData) =>
           StructField(
-            name     = tFieldIdEnum.getFieldName,
+            name = tFieldIdEnum.getFieldName,
             dataType = convertThriftFieldToDataType(metaData.valueMetaData),
             nullable = metaData.requirementType != TFieldRequirementType.REQUIRED
           )
@@ -103,19 +103,19 @@ object ThriftRowConverter {
       case TType.STRUCT => elmMeta match {
         case _: StructMetaData => convert(elm.asInstanceOf[TBaseType])
         // If we've recursed on a struct, thrift returns a TType.Struct with non StructMetaData. We serialize to bytes
-        case _                 => thriftSerializer.serialize(elm.asInstanceOf[TBase[_, _]])
+        case _ => thriftSerializer.serialize(elm.asInstanceOf[TBase[_, _]])
       }
       // Base Cases
-      case TType.ENUM      => elm.toString
+      case TType.ENUM => elm.toString
 
-      case TType.BYTE      => java.lang.Byte.valueOf(elm.asInstanceOf[java.lang.Number].byteValue())
-      case TType.I16       => java.lang.Short.valueOf(elm.asInstanceOf[java.lang.Number].shortValue())
-      case TType.I32       => java.lang.Integer.valueOf(elm.asInstanceOf[java.lang.Number].intValue())
-      case TType.I64       => java.lang.Long.valueOf(elm.asInstanceOf[java.lang.Number].longValue())
-      case TType.DOUBLE    => java.lang.Double.valueOf(elm.asInstanceOf[java.lang.Number].doubleValue())
-      case TType.BOOL      => elm.asInstanceOf[java.lang.Boolean]
-      case TType.STRING    => elm.asInstanceOf[java.lang.String]
-      case illegalType @ _ => throw new IllegalArgumentException(s"Illegal Thrift type: $illegalType")
+      case TType.BYTE => java.lang.Byte.valueOf(elm.asInstanceOf[java.lang.Number].byteValue())
+      case TType.I16 => java.lang.Short.valueOf(elm.asInstanceOf[java.lang.Number].shortValue())
+      case TType.I32 => java.lang.Integer.valueOf(elm.asInstanceOf[java.lang.Number].intValue())
+      case TType.I64 => java.lang.Long.valueOf(elm.asInstanceOf[java.lang.Number].longValue())
+      case TType.DOUBLE => java.lang.Double.valueOf(elm.asInstanceOf[java.lang.Number].doubleValue())
+      case TType.BOOL => elm.asInstanceOf[java.lang.Boolean]
+      case TType.STRING => elm.asInstanceOf[java.lang.String]
+      case illegalType@_ => throw new IllegalArgumentException(s"Illegal Thrift type: $illegalType")
     }
   }
 
@@ -154,17 +154,17 @@ object ThriftRowConverter {
         case structMetaData: StructMetaData => extractSchema(structMetaData.structClass)
         // If we have preformed a recursion on a struct, thrift does not return StructMetaData.
         // We use StringType here for JSON
-        case _                              => BinaryType
+        case _ => BinaryType
       }
       // Base Cases
-      case TType.BOOL                => BooleanType
-      case TType.BYTE                => ByteType
-      case TType.DOUBLE              => DoubleType
-      case TType.I16                 => ShortType
-      case TType.I32                 => IntegerType
-      case TType.I64                 => LongType
+      case TType.BOOL => BooleanType
+      case TType.BYTE => ByteType
+      case TType.DOUBLE => DoubleType
+      case TType.I16 => ShortType
+      case TType.I32 => IntegerType
+      case TType.I64 => LongType
       case TType.STRING | TType.ENUM => StringType
-      case illegalType @ _           => throw new IllegalArgumentException(s"Illegal Thrift type: $illegalType")
+      case illegalType@_ => throw new IllegalArgumentException(s"Illegal Thrift type: $illegalType")
     }
   }
 

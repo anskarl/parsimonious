@@ -6,6 +6,11 @@ enum EnumDummy {
     MAYBE
 }
 
+struct PropertyValue{
+    1: required string property
+    2: required string value
+}
+
 struct BasicDummy {
     1: required string reqStr
     2: optional string str
@@ -13,9 +18,23 @@ struct BasicDummy {
     4: optional i32 int32
     5: optional i64 int64
     6: optional double dbl
-    7: optional byte byt
+    7: optional i8 byt
     8: optional bool bl
     9: optional binary bin
+    10: optional list<i32> listNumbersI32
+    11: optional list<double> listNumbersDouble
+    12: optional set<i32> setNumbersI32
+    13: optional set<double> setNumbersDouble
+    14: optional EnumDummy enm
+    15: optional list<PropertyValue> listStruct
+    16: optional map<i32, double> mapPrimitives
+    17: optional map<PropertyValue, double> mapStructKey
+    18: optional map<string, double> mapPrimitivesStr
+}
+
+struct NestedDummy {
+    1: required string reqStr
+    2: required BasicDummy basic
 }
 
 union UnionDummy {

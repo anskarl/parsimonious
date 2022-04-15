@@ -1,6 +1,6 @@
 package io.github.anskarl
 
-import org.apache.thrift.{ TBase, TFieldIdEnum }
+import org.apache.thrift.{TBase, TFieldIdEnum}
 
 package object parsimonious {
 

@@ -1,7 +1,7 @@
 package io.github.anskarl.parsimonious.json
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.{JsonNodeFactory, ObjectNode}
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.github.anskarl.parsimonious.TBaseType
 import org.apache.thrift.meta_data._
 import org.apache.thrift.protocol.TType
@@ -77,8 +77,7 @@ object ThriftJsonConverter {
         val keyVals = keys.zip(vals)
 
 
-        // When the key is not primitive, we convert the map to a list of key/value struct
-//        if (isPrimitive(mapMeta.keyMetaData)) {
+        // When the key is not STRING, we convert the map to a list of key/value struct
         if(mapMeta.keyMetaData.`type` == TType.STRING) {
           keyVals.foldLeft(nodeFactory.objectNode()){
             case (node, (k, v)) =>

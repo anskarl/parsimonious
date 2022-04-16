@@ -3,7 +3,7 @@ import sbt.Keys._
 
 object Dependencies {
     object v {
-        final val Spark = "2.4.5"
+        final val Spark = "2.4.8"
         final val Hadoop = "2.10.0"
         final val SparkTestingBase = "2.4.5_0.14.0"
 

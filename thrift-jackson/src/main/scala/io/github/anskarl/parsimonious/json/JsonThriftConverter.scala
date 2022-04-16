@@ -6,13 +6,13 @@ import org.apache.thrift.{TBase, TDeserializer, TFieldIdEnum}
 import org.apache.thrift.meta_data.{FieldMetaData, FieldValueMetaData, ListMetaData, MapMetaData, SetMetaData, StructMetaData}
 import org.apache.thrift.protocol.{TCompactProtocol, TType}
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node
 
 import java.nio.ByteBuffer
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 object JsonThriftConverter {
-
 
   private val DefaultTCompactProtocolDeserializer = new TDeserializer(new TCompactProtocol.Factory())
   /**
@@ -58,14 +58,14 @@ object JsonThriftConverter {
           thriftDeserializer = thriftDeserializer
         ).asInstanceOf[Object]
 
-      instance.setFieldValue(field, datum) //todo
+      instance.setFieldValue(field, datum)
     }
     instance
   }
 
   @inline
   private def convertJsonNodeElmSeqToJavaElmSeq(
-    seq: com.fasterxml.jackson.databind.node.ArrayNode,
+    seq: node.ArrayNode,
     innerElmMeta: FieldValueMetaData,
     typeDefClasses: Map[String, ClassTBaseType],
     thriftDeserializer: TDeserializer
@@ -87,13 +87,12 @@ object JsonThriftConverter {
     if (meta.isBinary) {
       val decoded = Base64Variants
         .getDefaultVariant
-        .decode(elm.asInstanceOf[com.fasterxml.jackson.databind.node.ValueNode].asText())
+        .decode(elm.asInstanceOf[node.ValueNode].asText())
 
       ByteBuffer.wrap(decoded)
     }
     else meta.`type` match {
       // Recursive Cases
-
       case TType.STRUCT =>
         meta match {
           case structMetaData: StructMetaData =>
@@ -119,16 +118,16 @@ object JsonThriftConverter {
       case TType.MAP =>
         val mapMeta = meta.asInstanceOf[MapMetaData]
 
-//        if(isPrimitive(mapMeta.keyMetaData)){
+          // When the key is not STRING, we convert the map to a list of key/value struct
           if(mapMeta.keyMetaData.`type` == TType.STRING) {
-          val objNode = elm.asInstanceOf[com.fasterxml.jackson.databind.node.ObjectNode]
+            val objNode = elm.asInstanceOf[node.ObjectNode]
 
-          objNode.fields().asScala.map{ entry =>
+            objNode.fields().asScala.map{ entry =>
             entry.getKey -> convertJsonElmToJavaElm(entry.getValue, mapMeta.valueMetaData, typeDefClses,thriftDeserializer)
           }.toMap.asJava
         }
         else {
-          val arrayNode = elm.asInstanceOf[com.fasterxml.jackson.databind.node.ArrayNode]
+          val arrayNode = elm.asInstanceOf[node.ArrayNode]
 
           arrayNode.asScala.map{ element =>
             val keyNode = element.get(keyName)
@@ -146,7 +145,7 @@ object JsonThriftConverter {
         val listMeta = meta.asInstanceOf[ListMetaData]
 
         convertJsonNodeElmSeqToJavaElmSeq(
-          elm.asInstanceOf[com.fasterxml.jackson.databind.node.ArrayNode],
+          elm.asInstanceOf[node.ArrayNode],
           listMeta.elemMetaData,
           typeDefClses,
           thriftDeserializer
@@ -156,21 +155,21 @@ object JsonThriftConverter {
 
         val setMeta = meta.asInstanceOf[SetMetaData]
         convertJsonNodeElmSeqToJavaElmSeq(
-          elm.asInstanceOf[com.fasterxml.jackson.databind.node.ArrayNode],
+          elm.asInstanceOf[node.ArrayNode],
           setMeta.elemMetaData,
           typeDefClses,
           thriftDeserializer
         ).toSet.asJava
 
       // Base Cases
-      case TType.ENUM      => UnsafeThriftHelpers.enumOf(meta, elm.asInstanceOf[com.fasterxml.jackson.databind.node.TextNode].asText())
-      case TType.BYTE      => java.lang.Byte.valueOf(elm.asInstanceOf[com.fasterxml.jackson.databind.node.NumericNode].asInt().byteValue())
-      case TType.I16       => java.lang.Short.valueOf(elm.asInstanceOf[com.fasterxml.jackson.databind.node.NumericNode].shortValue())
-      case TType.I32       => java.lang.Integer.valueOf(elm.asInstanceOf[com.fasterxml.jackson.databind.node.NumericNode].intValue())
-      case TType.I64       => java.lang.Long.valueOf(elm.asInstanceOf[com.fasterxml.jackson.databind.node.NumericNode].longValue())
-      case TType.DOUBLE    => java.lang.Double.valueOf(elm.asInstanceOf[com.fasterxml.jackson.databind.node.NumericNode].doubleValue())
-      case TType.BOOL      => elm.asInstanceOf[com.fasterxml.jackson.databind.node.BooleanNode].asBoolean()
-      case TType.STRING    => elm.asInstanceOf[com.fasterxml.jackson.databind.node.TextNode].asText()
+      case TType.ENUM      => UnsafeThriftHelpers.enumOf(meta, elm.asInstanceOf[node.TextNode].asText())
+      case TType.BYTE      => java.lang.Byte.valueOf(elm.asInstanceOf[node.NumericNode].asInt().byteValue())
+      case TType.I16       => java.lang.Short.valueOf(elm.asInstanceOf[node.NumericNode].shortValue())
+      case TType.I32       => java.lang.Integer.valueOf(elm.asInstanceOf[node.NumericNode].intValue())
+      case TType.I64       => java.lang.Long.valueOf(elm.asInstanceOf[node.NumericNode].longValue())
+      case TType.DOUBLE    => java.lang.Double.valueOf(elm.asInstanceOf[node.NumericNode].doubleValue())
+      case TType.BOOL      => elm.asInstanceOf[node.BooleanNode].asBoolean()
+      case TType.STRING    => elm.asInstanceOf[node.TextNode].asText()
 
       case illegalType @ _ => throw new IllegalArgumentException(s"Illegal Thrift type: $illegalType")
     }

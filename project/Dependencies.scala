@@ -2,14 +2,21 @@ import sbt._
 import sbt.Keys._
 
 object Dependencies {
-    object v {
-        final val Spark = "2.4.8"
-        final val Hadoop = "2.10.0"
-        final val SparkTestingBase = "2.4.5_0.14.0"
 
-        final val Parquet = "1.10.1"
-//        final val Thrift = "0.10.0"
-        final val Thrift = "0.13.0"
+    object v {
+        final val Spark2 = "2.4.8"
+        final val Hadoop2 = "2.10.0"
+        final val SparkTestingBase2 = "2.4.5_0.14.0"
+        final val Parquet10 = "1.10.1"
+
+        final val Spark3 = "3.2.0"
+        final val Hadoop3 = "3.0.0"
+        final val SparkTestingBase3 = "3.2.0_1.1.1"
+        final val Parquet12 = "1.12.2"
+
+
+        final val Thrift = "0.10.0"
+        // final val Thrift = "0.13.0"
 
         final val ScalaTest = "3.1.4"
         final val ScalaTestPlus = "3.1.4.0"
@@ -24,6 +31,41 @@ object Dependencies {
         final val JavaXAnnotationApi = "1.3.2"
     }
 
+
+    def sparkDependenciesFor(profile: String): Seq[ModuleID] ={
+        val (sparkVersion, hadoopVersion, sparkTestingBaseVersion, parquetVersion) = profile match {
+            case "spark2" => (v.Spark2, v.Hadoop2, v.SparkTestingBase2, v.Parquet10)
+            case "spark3" => (v.Spark3, v.Hadoop3, v.SparkTestingBase3, v.Parquet12)
+            case _ => throw new IllegalArgumentException(s"Unknown profile name '$profile'")
+        }
+
+        Seq(
+            // Hadoop
+            "org.apache.hadoop" % "hadoop-client" % hadoopVersion % Provided,
+            "org.apache.hadoop" % "hadoop-hdfs" % hadoopVersion % Provided,
+            // Test dependencies Hadoop
+            "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion % Test,
+            // Spark
+            "org.apache.spark" %% "spark-core" % sparkVersion % Provided exclude("org.apache.hadoop", "hadoop-client"),
+            "org.apache.spark" %% "spark-sql" % sparkVersion % Provided exclude("org.apache.hadoop", "hadoop-client"),
+            "org.apache.spark" %% "spark-catalyst" % sparkVersion % Provided exclude("org.apache.hadoop", "hadoop-client"),
+            // Test dependencies Spark
+            "org.apache.spark" %% "spark-core" % sparkVersion % Test,
+            "org.apache.spark" %% "spark-sql" % sparkVersion % Test,
+            "org.apache.spark" %% "spark-streaming" % sparkVersion % Test,
+            "org.apache.spark" %% "spark-catalyst" % sparkVersion % Test,
+            "com.holdenkarau" %% "spark-testing-base" % sparkTestingBaseVersion % Test,
+            // Parquet
+            "org.apache.parquet" % "parquet-thrift" % parquetVersion excludeAll(
+              ExclusionRule("org.slf4j", "slf4j-api"),
+              ExclusionRule("org.slf4j", "slf4j-log4j12"),
+              ExclusionRule("org.slf4j", "log4j-over-slf4j"),
+              ExclusionRule("org.slf4j", "jcl-over-slf4j"),
+              ExclusionRule("org.slf4j", "jul-to-slf4j")
+            )
+        )
+    }
+
     lazy val JavaXAnnotationApi = "javax.annotation" % "javax.annotation-api" % v.JavaXAnnotationApi
 
     lazy val ScalaCollectionCompat = "org.scala-lang.modules" %% "scala-collection-compat" % v.ScalaCollectionCompat
@@ -36,32 +78,11 @@ object Dependencies {
         "org.scalatestplus" %% "scalacheck-1-14" % v.ScalaTestPlus % Test
     )
 
-    lazy val Spark = Seq(
-        "org.apache.spark" %% "spark-core" % v.Spark % Provided exclude("org.apache.hadoop", "hadoop-client"),
-        "org.apache.spark" %% "spark-sql" % v.Spark % Provided exclude("org.apache.hadoop", "hadoop-client"),
-        "org.apache.spark" %% "spark-catalyst" % v.Spark % Provided exclude("org.apache.hadoop", "hadoop-client")
-    )
-
-    lazy val SparkTestingBase = "com.holdenkarau" %% "spark-testing-base" % v.SparkTestingBase % Test
-
     lazy val Jackson = Seq(
-        "com.fasterxml.jackson.core" % "jackson-core" % "2.13.0",
-        "com.fasterxml.jackson.core" % "jackson-databind" % "2.13.0",
-        "com.fasterxml.jackson.core" % "jackson-annotations" % "2.13.0",
-        "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.13.0"
-    )
-
-    lazy val Hadoop = Seq(
-        "org.apache.hadoop" % "hadoop-client" % v.Hadoop % Provided,
-        "org.apache.hadoop" % "hadoop-hdfs" % v.Hadoop % Provided
-    )
-
-    lazy val ParquetThrift = "org.apache.parquet" % "parquet-thrift" % v.Parquet excludeAll(
-        ExclusionRule("org.slf4j", "slf4j-api"),
-        ExclusionRule("org.slf4j", "slf4j-log4j12"),
-        ExclusionRule("org.slf4j", "log4j-over-slf4j"),
-        ExclusionRule("org.slf4j", "jcl-over-slf4j"),
-        ExclusionRule("org.slf4j", "jul-to-slf4j")
+        "com.fasterxml.jackson.core" % "jackson-core" % v.Jackson,
+        "com.fasterxml.jackson.core" % "jackson-databind" % v.Jackson,
+        "com.fasterxml.jackson.core" % "jackson-annotations" % v.Jackson,
+        "com.fasterxml.jackson.module" %% "jackson-module-scala" % v.Jackson
     )
 
     lazy val Thrift = "org.apache.thrift" % "libthrift" % v.Thrift excludeAll (
@@ -69,20 +90,10 @@ object Dependencies {
       ExclusionRule("org.apache.httpcomponents", "httpcore"),
       ExclusionRule("org.slf4j", "slf4j-api"))
 
-
     lazy val TestDependencies = Seq(
         "org.slf4j" % "slf4j-api" % v.SLF4J % Test,
         "org.slf4j" % "slf4j-nop" % v.SLF4J % Test,
         "org.scalatest" %% "scalatest" % v.ScalaTest % Test,
         "org.scalacheck" %% "scalacheck" % v.ScalaCheck % Test
-
-    )
-
-    lazy val TestDependenciesSpark = Seq(
-        "org.apache.hadoop" % "hadoop-minicluster" % v.Hadoop % Test,
-        "org.apache.spark" %% "spark-core" % v.Spark % Test,
-        "org.apache.spark" %% "spark-sql" % v.Spark % Test,
-        "org.apache.spark" %% "spark-streaming" % v.Spark % Test,
-        "org.apache.spark" %% "spark-catalyst" % v.Spark % Test
     )
 }

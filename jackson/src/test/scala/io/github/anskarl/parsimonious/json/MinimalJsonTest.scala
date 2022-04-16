@@ -1,6 +1,7 @@
 package io.github.anskarl.parsimonious.json
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import io.github.anskarl.parsimonious.{BasicDummy, EnumDummy, NestedDummy, PropertyValue}
 import org.scalatest.matchers.must.Matchers
@@ -94,8 +95,8 @@ class MinimalJsonTest extends AnyWordSpecLike  with Matchers {
   "Basic encode/decode functionality" should {
     "encode/decode Thrift class to Json" in {
 
-      val encodedJson = ThriftJsonConverter.convert(sampleNestedDummy)
-      val decodedNestedDummy = JsonThriftConverter.convert(classOf[NestedDummy], encodedJson)
+      val encodedJson: ObjectNode = ThriftJsonConverter.convert(sampleNestedDummy)
+      val decodedNestedDummy: NestedDummy = JsonThriftConverter.convert(classOf[NestedDummy], encodedJson)
 
       decodedNestedDummy.getReqStr mustEqual sampleNestedDummy.getReqStr
       decodedNestedDummy.getBasic.getReqStr mustEqual sampleNestedDummy.getBasic.getReqStr

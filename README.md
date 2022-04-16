@@ -1,5 +1,20 @@
-_Parsimonious_ is a helper library for encoding/decoding Apache Thrift classes to Spark DataFrames. 
-The implementation is based on https://github.com/airbnb/airbnb-spark-thrift/tree/nwparker/convV2.
+```
+┌─┐┌─┐┬─┐┌─┐┬┌┬┐┌─┐┌┐┌┬┌─┐┬ ┬┌─┐
+├─┘├─┤├┬┘└─┐│││││ ││││││ ││ │└─┐
+┴  ┴ ┴┴└─└─┘┴┴ ┴└─┘┘└┘┴└─┘└─┘└─┘
+```
+_Parsimonious_ is a helper library for encoding/decoding Apache Thrift classes to Spark Dataframes and Jackson JSON. 
+The implementation for Spark is based on https://github.com/airbnb/airbnb-spark-thrift/tree/nwparker/convV2.
+
+Important features:
+
+  - Supports all Thrift types, including unions and binary types. 
+  - Supports nested and recursive structures. Please note, for Spark, recursive structures are being serialized to bytes.
+  - For Json, when a Thrift map does not have string type as a key (e.g., a struct) then _Parsimonious_ will convert it to a sequence of key, value tuples (the opposite during decoding to Thrift is also supported).
+
+## Example usage
+
+More detailed examples can be found in unit tests (including nested and recursive structures).
 
 Assume that we have an Apache Thrift struct named `BasicDummy`
 
@@ -19,7 +34,9 @@ struct BasicDummy {
 }
 ```
 
-Create a Spark DataFrame:
+### Apache Thrift interoperability with Apache Spark
+
+Create a Spark Dataframe:
 
 ```scala
 import org.apache.spark.sql.types.StructType
@@ -126,4 +143,102 @@ decodedInputSeq.take(20).foreach(println)
 // BasicDummy(reqStr:index: 18, int32:18, bl:false)
 // BasicDummy(reqStr:index: 19, int32:19, bl:false)
 // BasicDummy(reqStr:index: 20, int32:20, bl:true)
+```
+
+### Apache Thrift interoperability with Jackson for JSON support
+
+Encode/Decode Apache Thrift POJO class to/from Jackson node:
+
+```scala
+import io.github.anskarl.parsimonious._
+import io.github.anskarl.parsimonious.json._
+import scala.collection.JavaConverters._
+
+// create POJO
+val basicDummy = new BasicDummy()
+  basicDummy.setReqStr("required 101")
+  basicDummy.setStr("optional 101")
+  basicDummy.setInt16(101.toShort)
+  basicDummy.setInt32(101)
+  basicDummy.setInt64(101L)
+  basicDummy.setDbl(101.101)
+  basicDummy.setByt(8.toByte)
+  basicDummy.setBl(false)
+  basicDummy.setBin("101".getBytes("UTF-8"))
+  basicDummy.setListNumbersI32(List(1,2,3).map(java.lang.Integer.valueOf).asJava)
+  basicDummy.setListNumbersDouble(List(1.1,2.2,3.3).map(java.lang.Double.valueOf).asJava)
+  basicDummy.setSetNumbersI32(Set(1,2,3).map(java.lang.Integer.valueOf).asJava)
+  basicDummy.setSetNumbersDouble(Set(1.1,2.2,3.3).map(java.lang.Double.valueOf).asJava)
+  basicDummy.setEnm(EnumDummy.MAYBE)
+  basicDummy.setListStruct(List(new PropertyValue("prop1", "val1"), new PropertyValue("prop2", "val2")).asJava)
+  basicDummy.setMapPrimitives(
+    Map(
+      java.lang.Integer.valueOf(1) -> java.lang.Double.valueOf(1.1),
+      java.lang.Integer.valueOf(2) -> java.lang.Double.valueOf(2.2)
+    ).asJava
+  )
+basicDummy.setMapStructKey(Map(
+    new PropertyValue("prop1", "val1") -> java.lang.Double.valueOf(1.1),
+    new PropertyValue("prop2", "val2") -> java.lang.Double.valueOf(2.2)
+  ).asJava)
+basicDummy.setMapPrimitivesStr(Map("one" -> java.lang.Double.valueOf(1.0), "two" -> java.lang.Double.valueOf(2.0)).asJava)
+
+
+// .. etc
+
+// Encode to Json
+val encoded: ObjectNode = ThriftJsonConverter.convert(basicDummy)
+println(encoded.toPrettyString)
+```
+Will print the following:
+```json
+{
+    "reqStr" : "required 101",
+    "str" : "optional 101",
+    "int16" : 101,
+    "int32" : 101,
+    "int64" : 101,
+    "dbl" : 101.101,
+    "byt" : 8,
+    "bl" : false,
+    "bin" : "MTAx",
+    "listNumbersI32" : [ 1, 2, 3 ],
+    "listNumbersDouble" : [ 1.1, 2.2, 3.3 ],
+    "setNumbersI32" : [ 1, 2, 3 ],
+    "setNumbersDouble" : [ 1.1, 2.2, 3.3 ],
+    "enm" : "MAYBE",
+    "listStruct" : [ {
+      "property" : "prop1",
+      "value" : "val1"
+    }, {
+      "property" : "prop2",
+      "value" : "val2"
+    } ],
+    "mapPrimitives":[{"key":1,"value":1.1},{"key":2,"value":2.2}],
+    "mapStructKey" : [ {
+      "key" : {
+        "property" : "prop1",
+        "value" : "val1"
+      },
+      "value" : 1.1
+    }, {
+      "key" : {
+        "property" : "prop2",
+        "value" : "val2"
+      },
+      "value" : 2.2
+    } ],
+    "mapPrimitivesStr": {"one": 1.0, "two": 2.0}
+}
+```
+Please note that the type of key in both `mapPrimitives` and `mapStructKey` is not string. 
+In such cases _Parsimonious_ converts them to lists of structs with the pair of fields 
+`"key"` and `"value"`. That convention, is being performed since JSON does not support 
+maps having keys with type different of string.  
+
+To decode from JSON back to Thrift POJO:
+
+```scala
+// Decode from Json
+val decoded: BasicDummy = JsonThriftConverter.convert(classOf[BasicDummy], encoded)
 ```

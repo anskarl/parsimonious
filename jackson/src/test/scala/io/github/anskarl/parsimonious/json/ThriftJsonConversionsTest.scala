@@ -15,8 +15,8 @@ import scala.util.chaining._
 
 class ThriftJsonConversionsTest extends AnyWordSpecLike with Matchers with Checkers with DummyGenerators {
 
-  "Row <> Thrift converters" should {
-    "encode/decode Thrift generated classes to Spark Rows" in {
+  "Json <> Thrift converters" should {
+    "encode/decode Thrift generated classes to Json" in {
       val prop = forAll(Gen.nonEmptyListOf(arbComplexDummy.arbitrary)) { inputList: List[ComplexDummy] =>
 
         val encoded = inputList.map(cd => ThriftJsonConverter.convert(cd.asInstanceOf[TBase[_,_]]).jsonNode.toString)

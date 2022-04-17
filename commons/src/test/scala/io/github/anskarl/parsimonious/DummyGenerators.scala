@@ -1,7 +1,8 @@
 package io.github.anskarl.parsimonious
 
 import org.scalacheck.{Arbitrary, Gen}
-import scala.collection.JavaConverters._
+//import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.chaining._
 
 trait DummyGenerators {

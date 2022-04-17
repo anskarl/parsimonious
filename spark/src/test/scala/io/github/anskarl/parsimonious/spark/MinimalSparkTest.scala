@@ -1,6 +1,5 @@
 package io.github.anskarl.parsimonious.spark
 
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import io.github.anskarl.parsimonious.BasicDummy
 import io.github.anskarl.parsimonious.spark.Converters._
 import org.apache.spark.rdd.RDD
@@ -10,8 +9,9 @@ import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
 import scala.util.chaining.scalaUtilChainingOps
+import scala.jdk.CollectionConverters._
 
-class MinimalSparkTest extends AnyWordSpecLike with DataFrameSuiteBase with Matchers {
+class MinimalSparkTest extends AnyWordSpecLike with SparkSessionTestSuite with Matchers {
 
   "Basic encode/decode functionality" should {
     "encode/decode Thrift class to Spark Rows" in {
@@ -24,6 +24,9 @@ class MinimalSparkTest extends AnyWordSpecLike with DataFrameSuiteBase with Matc
             d.setReqStr(s"index: ${index}")
             d.setInt32(index)
             d.setBl(index % 10 == 0)
+            d.setListNumbersI32(List(1,2,3).map(java.lang.Integer.valueOf).asJava)
+            d.setSetNumbersI32(Set(1,2,3).map(java.lang.Integer.valueOf).asJava)
+            d.setMapPrimitivesStr(Map("1" -> java.lang.Double.valueOf(1.1)).asJava)
           }
 
       val rowSeq: Seq[Row] = exampleData.map(_.toRow)

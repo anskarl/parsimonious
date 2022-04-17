@@ -105,12 +105,12 @@ object RowThriftConverter {
 
         val keys = elm match {
           case map: Map[_, _] => map.keys
-          case mapRows: Seq[_] => mapRows.map { case Row(k: Any, _) => k }
+          case mapRows: Iterable[_] => mapRows.map { case Row(k: Any, _) => k }
         }
 
         val vals = elm match {
           case map: Map[_, _] => map.values
-          case mapRows: Seq[_] => mapRows.map { case Row(_, v: Any) => v }
+          case mapRows: Iterable[_] => mapRows.map { case Row(_, v: Any) => v }
         }
 
         val keyVals =
@@ -121,9 +121,11 @@ object RowThriftConverter {
 
       case TType.LIST =>
         val listMeta = meta.asInstanceOf[ListMetaData]
+        // should keep WrappedArray to retain compatibility with Scala 2.12
+        val arr = elm.asInstanceOf[scala.collection.Iterable[Any]]
 
         convertRowElmSeqToJavaElmSeq(
-          elm.asInstanceOf[Seq[Any]],
+          arr.toSeq,
           listMeta.elemMetaData,
           typeDefClses,
           thriftDeserializer
@@ -132,8 +134,12 @@ object RowThriftConverter {
       case TType.SET =>
 
         val setMeta = meta.asInstanceOf[SetMetaData]
+
+        // should keep WrappedArray to retain compatibility with Scala 2.12
+        val arr = elm.asInstanceOf[scala.collection.Iterable[Any]]
+
         convertRowElmSeqToJavaElmSeq(
-          elm.asInstanceOf[Seq[Any]],
+          arr.toSeq,
           setMeta.elemMetaData,
           typeDefClses,
           thriftDeserializer

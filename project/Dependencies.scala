@@ -4,41 +4,37 @@ import sbt.Keys._
 object Dependencies {
 
     object v {
-        final val Spark2 = "2.4.8"
+        final val Spark2 = "2.4.5"
         final val Hadoop2 = "2.10.0"
-        final val SparkTestingBase2 = "2.4.5_0.14.0"
         final val Parquet10 = "1.10.1"
 
         final val Spark3 = "3.2.0"
-        final val Hadoop3 = "3.0.0"
-        final val SparkTestingBase3 = "3.2.0_1.1.1"
+        final val Hadoop3 = "3.3.1"
         final val Parquet12 = "1.12.2"
 
-
-        final val Thrift = "0.10.0"
+        // final val Thrift = "0.10.0"
         // final val Thrift = "0.13.0"
 
-        final val ScalaTest = "3.1.4"
-        final val ScalaTestPlus = "3.1.4.0"
-        final val ScalaCheck = "1.14.0"
+        final val ScalaTest = "3.2.11"
+        final val ScalaTestPlus = "3.2.11.0"
+        final val ScalaCheck = "1.15.4"
 
         final val UtilBackports = "2.1"
         final val SLF4J = "1.7.25"
         final val Jackson = "2.13.0"
 
-        final val ScalaCollectionCompat = "2.1.6"
+        final val ScalaCollectionCompat = "2.7.0"
 
         final val JavaXAnnotationApi = "1.3.2"
     }
 
 
     def sparkDependenciesFor(profile: String): Seq[ModuleID] ={
-        val (sparkVersion, hadoopVersion, sparkTestingBaseVersion, parquetVersion) = profile match {
-            case "spark2" => (v.Spark2, v.Hadoop2, v.SparkTestingBase2, v.Parquet10)
-            case "spark3" => (v.Spark3, v.Hadoop3, v.SparkTestingBase3, v.Parquet12)
+        val (sparkVersion, hadoopVersion, parquetVersion) = profile match {
+            case "spark2" => (v.Spark2, v.Hadoop2, v.Parquet10)
+            case "spark3" => (v.Spark3, v.Hadoop3, v.Parquet12)
             case _ => throw new IllegalArgumentException(s"Unknown profile name '$profile'")
         }
-
         Seq(
             // Hadoop
             "org.apache.hadoop" % "hadoop-client" % hadoopVersion % Provided,
@@ -54,7 +50,6 @@ object Dependencies {
             "org.apache.spark" %% "spark-sql" % sparkVersion % Test,
             "org.apache.spark" %% "spark-streaming" % sparkVersion % Test,
             "org.apache.spark" %% "spark-catalyst" % sparkVersion % Test,
-            "com.holdenkarau" %% "spark-testing-base" % sparkTestingBaseVersion % Test,
             // Parquet
             "org.apache.parquet" % "parquet-thrift" % parquetVersion excludeAll(
               ExclusionRule("org.slf4j", "slf4j-api"),
@@ -75,7 +70,7 @@ object Dependencies {
     lazy val ScalaCheck = "org.scalacheck" %% "scalacheck" % v.ScalaCheck % Test
     lazy val ScalaTest = Seq(
         "org.scalatest" %% "scalatest" % v.ScalaTest % Test,
-        "org.scalatestplus" %% "scalacheck-1-14" % v.ScalaTestPlus % Test
+        "org.scalatestplus" %% "scalacheck-1-15" % v.ScalaTestPlus % Test
     )
 
     lazy val Jackson = Seq(
@@ -85,10 +80,11 @@ object Dependencies {
         "com.fasterxml.jackson.module" %% "jackson-module-scala" % v.Jackson
     )
 
-    lazy val Thrift = "org.apache.thrift" % "libthrift" % v.Thrift excludeAll (
+    def thrift(version: String) = "org.apache.thrift" % "libthrift" % version excludeAll (
       ExclusionRule("org.apache.httpcomponents", "httpclient"),
       ExclusionRule("org.apache.httpcomponents", "httpcore"),
-      ExclusionRule("org.slf4j", "slf4j-api"))
+      ExclusionRule("org.slf4j", "slf4j-api")
+    )
 
     lazy val TestDependencies = Seq(
         "org.slf4j" % "slf4j-api" % v.SLF4J % Test,

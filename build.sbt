@@ -28,6 +28,10 @@ def thriftCmd(majorVersion: String): String = majorVersion match {
 def module(name: String) = Project(s"parsimonious-${name}", file(name))
   .settings(scalaVersion := DefaultScalaVersion)
   .settings(
+    organization := "io.github.anskarl",
+    publishMavenStyle := true
+  )
+  .settings(
     fork in Test := true,
     javaOptions ++= Seq("-Xms512M", "-Xmx2048M", "-XX:MaxPermSize=2048M", "-XX:+CMSClassUnloadingEnabled"),
     parallelExecution in Test := false,
@@ -51,9 +55,10 @@ lazy val commons = module("commons")
     dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-core" % Dependencies.v.Jackson,
     dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-databind" % Dependencies.v.Jackson
   )
+  .settings(version := s"thrift_${thriftMajorVersion}_${version.value}")
   .settings(
     artifactName := { (sv: ScalaVersion, module: ModuleID, artifact: Artifact) =>
-      s"${artifact.name}_${sv.binary}-thrift_${thriftMajorVersion}_${module.revision}.${artifact.extension}"
+      s"${artifact.name}_${sv.binary}-${module.revision}.${artifact.extension}"
     }
   )
 
@@ -61,9 +66,10 @@ lazy val jackson = module("jackson")
   .dependsOn(commons % "compile->compile;test->test")
   .settings(crossScalaVersions := DefaultCrossScalaVersions)
   .settings(libraryDependencies ++= Dependencies.Jackson)
+  .settings(version := s"thrift_${thriftMajorVersion}_${version.value}")
   .settings(
     artifactName := { (sv: ScalaVersion, module: ModuleID, artifact: Artifact) =>
-      s"${artifact.name}_${sv.binary}-thrift_${thriftMajorVersion}_${module.revision}.${artifact.extension}"
+      s"${artifact.name}_${sv.binary}-${module.revision}.${artifact.extension}"
     }
   )
 
@@ -73,9 +79,10 @@ lazy val spark = module("spark")
   .settings(resolvers += ("Twitter Maven Repo" at "http://maven.twttr.com").withAllowInsecureProtocol(true))
   .settings(libraryDependencies ++= Dependencies.sparkDependenciesFor(sparkProfile))
   .settings(libraryDependencies ++= Dependencies.Jackson)
+  .settings(version := s"thrift_${thriftMajorVersion}_${sparkProfile}_${version.value}")
   .settings(
     artifactName := { (sv: ScalaVersion, module: ModuleID, artifact: Artifact) =>
-      s"${artifact.name}_${sv.binary}-thrift_${thriftMajorVersion}_${sparkProfile}_${module.revision}.${artifact.extension}"
+      s"${artifact.name}_${sv.binary}-${module.revision}.${artifact.extension}"
     }
   )
 

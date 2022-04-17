@@ -4,3 +4,14 @@ alias build-jackson = ;+parsimonious-jackson/clean ;+parsimonious-jackson/test ;
 
 alias build-spark = ;+parsimonious-spark/clean ;parsimonious-spark/test ;+parsimonious-spark/package
 
+alias publish-commons = ;+parsimonious-commons/publish
+
+alias publish-jackson = ;+parsimonious-jackson/publish
+
+alias publish-spark = ;+parsimonious-spark/publish
+
+alias publish-local-commons = ;+parsimonious-commons/publishLocal
+
+alias publish-local-jackson = ;+parsimonious-jackson/publishLocal
+
+alias publish-local-spark = ;+parsimonious-spark/publishLocal

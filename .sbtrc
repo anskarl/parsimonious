@@ -1,0 +1,6 @@
+alias build-commons = ;+parsimonious-commons/clean ;+parsimonious-jackson/test ;+parsimonious-commons/package
+
+alias build-jackson = ;+parsimonious-jackson/clean ;+parsimonious-jackson/test ;+parsimonious-jackson/package
+
+alias build-spark = ;+parsimonious-spark/clean ;parsimonious-spark/test ;+parsimonious-spark/package
+

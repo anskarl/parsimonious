@@ -30,14 +30,16 @@ object ThriftRowConverter {
       .getStructMetaDataMap(instance.getClass.asInstanceOf[Class[_ <: TBase[_, _]]])
       .asScala
 
+
     val elms: Seq[Any] = fieldMeta
-      .map {
-        case (tFieldIdEnum: TFieldIdEnum, metaData: FieldMetaData) =>
-          val field: F = instance.fieldForId(tFieldIdEnum.getThriftFieldId)
+      .map { entry: (TFieldIdEnum, FieldMetaData) =>
+          val (tFieldIdEnum, metaData) = entry
+          val field: F = instance.fieldForId(tFieldIdEnum.getThriftFieldId).asInstanceOf[F]
 
           if (instance.isSet(field))
             convertJavaElmToRowElm(instance.getFieldValue(field), metaData.valueMetaData, thriftSerializer)
           else null
+
       }
       .toSeq
 
@@ -53,14 +55,15 @@ object ThriftRowConverter {
       .getStructMetaDataMap(tbaseClass.asInstanceOf[Class[_ <: TBase[_, _]]])
       .asScala
 
+
     val fields: Seq[StructField] = fieldMeta
-      .map {
-        case (tFieldIdEnum: TFieldIdEnum, metaData: FieldMetaData) =>
-          StructField(
-            name = tFieldIdEnum.getFieldName,
-            dataType = convertThriftFieldToDataType(metaData.valueMetaData),
-            nullable = metaData.requirementType != TFieldRequirementType.REQUIRED
-          )
+      .map { entry: (TFieldIdEnum, FieldMetaData) =>
+        val (tFieldIdEnum, metaData) = entry
+        StructField(
+          name = tFieldIdEnum.getFieldName,
+          dataType = convertThriftFieldToDataType(metaData.valueMetaData),
+          nullable = metaData.requirementType != TFieldRequirementType.REQUIRED
+        )
       }
       .toSeq
 
@@ -81,7 +84,7 @@ object ThriftRowConverter {
         val seq = elm.asInstanceOf[java.util.List[Any]].asScala
         val innerElmMeta = elmMeta.asInstanceOf[ListMetaData].elemMetaData
 
-        convertJavaElmSeqToRowElmSeq(seq, innerElmMeta, thriftSerializer)
+        convertJavaElmSeqToRowElmSeq(seq.toSeq, innerElmMeta, thriftSerializer)
 
       case TType.SET =>
         val seq = elm.asInstanceOf[java.util.Set[Any]].asScala.toSeq

@@ -1,6 +1,5 @@
 package io.github.anskarl.parsimonious.spark
 
-import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import io.github.anskarl.parsimonious._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
@@ -13,24 +12,25 @@ import org.scalatestplus.scalacheck.Checkers
 
 import scala.util.chaining._
 
-class ThriftSparkConversionsTest extends AnyWordSpecLike with DataFrameSuiteBase with Matchers with Checkers with DummyGenerators {
+class ThriftSparkConversionsTest extends AnyWordSpecLike with SparkSessionTestSuite with Matchers with Checkers with DummyGenerators {
 
   "Row <> Thrift converters" should {
     "encode/decode Thrift generated classes to Spark Rows" in {
-      val prop = forAll(Gen.nonEmptyListOf(arbComplexDummy.arbitrary)) { inputList: List[ComplexDummy] =>
+      val prop = forAll(Gen.nonEmptyListOf(arbComplexDummy.arbitrary)) { inputList =>
 
         val sparkSchema: StructType = ThriftRowConverter.extractSchema(classOf[ComplexDummy])
 
         val rowSeq: Seq[Row] = inputList.map(ThriftRowConverter.convert(_))
         val rowRDD: RDD[Row] = spark.sparkContext.parallelize(rowSeq)
         val df = spark.createDataFrame(rowRDD, sparkSchema)
-        val dfRows = df.collect()
+        val dfRows = df.collect().toList
 
-        val decodedInputList = dfRows
+
+        val decodedInputSet = dfRows
           .map(RowThriftConverter.convert(classOf[ComplexDummy], _))
-          .toList
+          .toSet
 
-        inputList.toSet == decodedInputList.toSet
+        inputList.toSet == decodedInputSet
       }
 
       check(prop)

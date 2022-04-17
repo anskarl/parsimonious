@@ -58,7 +58,7 @@ object ThriftJsonConverter {
       case TType.LIST =>
         val seq = elm.asInstanceOf[java.util.List[Any]].asScala
         val innerElmMeta = elmMeta.asInstanceOf[ListMetaData].elemMetaData
-        val elements = convertJavaElmSeqToJsonNodeElmSeq(seq, innerElmMeta, thriftSerializer)
+        val elements = convertJavaElmSeqToJsonNodeElmSeq(seq.toSeq, innerElmMeta, thriftSerializer)
         nodeFactory.arrayNode().addAll(elements.asJava)
 
       case TType.SET =>

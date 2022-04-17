@@ -28,6 +28,16 @@ jobs:
         run: THRIFT_VERSION=0.10.0 SPARK_PROFILE=spark2 sbt build-spark
       - name: Build parsimonious-spark (thrift 0.10, spark 3.2)
         run: THRIFT_VERSION=0.10.0 SPARK_PROFILE=spark3 sbt build-spark
+
+      - name: Publish parsimonious-commons (thrift 0.10)
+        run: THRIFT_VERSION=0.10.0 sbt publish-commons
+      - name: Publish parsimonious-jackson (thrift 0.10)
+        run: THRIFT_VERSION=0.10.0 sbt publish-jackson
+      - name: Publish parsimonious-spark (thrift 0.10, spark 2.4)
+        run: THRIFT_VERSION=0.10.0 SPARK_PROFILE=spark2 sbt publish-spark
+      - name: Publish parsimonious-spark (thrift 0.10, spark 3.2)
+        run: THRIFT_VERSION=0.10.0 SPARK_PROFILE=spark3 sbt publish-spark
+
       - name: Build parsimonious-commons (thrift 0.13)
         run: THRIFT_VERSION=0.13.0 sbt build-commons
       - name: Build parsimonious-jackson (thrift 0.13)
@@ -36,5 +46,14 @@ jobs:
         run: THRIFT_VERSION=0.13.0 SPARK_PROFILE=spark2 sbt build-spark
       - name: Build parsimonious-spark (thrift 0.13, spark 3.2)
         run: THRIFT_VERSION=0.13.0 SPARK_PROFILE=spark3 sbt build-spark
+
+      - name: Publish parsimonious-commons (thrift 0.13)
+        run: THRIFT_VERSION=0.13.0 sbt publish-commons
+      - name: Publish parsimonious-jackson (thrift 0.13)
+        run: THRIFT_VERSION=0.13.0 sbt publish-jackson
+      - name: Publish parsimonious-spark (thrift 0.13, spark 2.4)
+        run: THRIFT_VERSION=0.13.0 SPARK_PROFILE=spark2 sbt publish-spark
+      - name: Publish parsimonious-spark (thrift 0.13, spark 3.2)
+        run: THRIFT_VERSION=0.13.0 SPARK_PROFILE=spark3 sbt publish-spark
     env:
       GITHUB_TOKEN: ${{ github.token }}

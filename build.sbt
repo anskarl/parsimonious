@@ -12,7 +12,10 @@ val DefaultCrossScalaVersions = Seq("2.12.12", "2.13.8")
 val githubPackageSettings = Seq(
   githubOwner := "anskarl",
   githubRepository := "parsimonious",
-  githubTokenSource := TokenSource.GitConfig("github.token")
+  githubTokenSource := {
+    if (sys.env.contains("GITHUB_TOKEN")) TokenSource.Environment("GITHUB_TOKEN")
+    else TokenSource.GitConfig("github.token")
+  }
 )
 
 def thriftCmd(majorVersion: String): String = majorVersion match {

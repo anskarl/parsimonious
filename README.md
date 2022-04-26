@@ -19,7 +19,7 @@ More detailed examples can be found in unit tests (including nested and recursiv
 Assume that we have an Apache Thrift struct named `BasicDummy`
 
 ```thrift
-namespace java io.github.anskarl.parsimonious
+namespace java com.github.anskarl.parsimonious
 
 struct BasicDummy {
     1: required string reqStr
@@ -42,8 +42,8 @@ Create a Spark Dataframe:
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row}
-import io.github.anskarl.parsimonious._
-import io.github.anskarl.parsimonious.spark.ThriftRowConverter
+import com.github.anskarl.parsimonious._
+import com.github.anskarl.parsimonious.spark.ThriftRowConverter
 
 // Assume that we have SparkSession initialized as `spark`
 // To extract the schema (i.e., Apache Spark org.apache.spark.sql.types.StructType)
@@ -150,8 +150,8 @@ decodedInputSeq.take(20).foreach(println)
 Encode/Decode Apache Thrift POJO class to/from Jackson node:
 
 ```scala
-import io.github.anskarl.parsimonious._
-import io.github.anskarl.parsimonious.json._
+import com.github.anskarl.parsimonious._
+import com.github.anskarl.parsimonious.json._
 import scala.collection.JavaConverters._
 
 // create POJO

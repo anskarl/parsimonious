@@ -16,4 +16,6 @@ alias publish-local-jackson = ;+parsimonious-jackson/publishLocal
 
 alias publish-local-spark = ;+parsimonious-spark/publishLocal
 
-alias build = ;build-commons ;build-jackson ;build-spark
+alias build-all = ;build-commons ;build-jackson ;build-spark
+
+alias publish-all = ;publish-commons ;publish-jackson ;publish-spark

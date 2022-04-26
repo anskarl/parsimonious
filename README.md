@@ -257,7 +257,7 @@ Version variants published in `oss.sonatype.org`
 <dependency>
   <groupId>com.github.anskarl</groupId>
   <artifactId>parsimonious-commons_[scala_version]</artifactId>
-  <version>thrift_[thift_version]-0.2.0-SNAPSHOT</version>
+  <version>thrift_[thift_version]-0.2.0</version>
 </dependency>
 ```
 
@@ -266,7 +266,7 @@ Version variants published in `oss.sonatype.org`
 <dependency>
   <groupId>com.github.anskarl</groupId>
   <artifactId>parsimonious-jackon_[scala_version]</artifactId>
-  <version>thrift_[thift_version]-0.2.0-SNAPSHOT</version>
+  <version>thrift_[thift_version]-0.2.0</version>
 </dependency>
 ```
 
@@ -275,7 +275,7 @@ Version variants published in `oss.sonatype.org`
 <dependency>
   <groupId>com.github.anskarl</groupId>
   <artifactId>parsimonious-spark_[scala_version]</artifactId>
-  <version>thrift_[thift_version]_spark[spark_major_version]-0.2.0-SNAPSHOT</version>
+  <version>thrift_[thift_version]_spark[spark_major_version]-0.2.0</version>
 </dependency>
 ```
 
@@ -289,15 +289,15 @@ resolvers += Resolver.sonatypeRepo("public") //  (or “snapshots”, “staging
 
 ***parsimonious-commons***:
 ```
-"com.github.anskarl" %% "parsimonious-commons" % "thrift_[thift_version]-0.2.0-SNAPSHOT"
+"com.github.anskarl" %% "parsimonious-commons" % "thrift_[thift_version]-0.2.0"
 ```
 
 ***parsimonious-jackon***:
 ```
-"com.github.anskarl" %% "parsimonious-jackson" % "thrift_[thift_version]-0.2.0-SNAPSHOT"
+"com.github.anskarl" %% "parsimonious-jackson" % "thrift_[thift_version]-0.2.0"
 ```
 
 ***parsimonious-spark***:
 ```
-"com.github.anskarl" %% "parsimonious-jackson" % "thrift_[thift_version]_spark[spark_major_version]-0.2.0-SNAPSHOT"
+"com.github.anskarl" %% "parsimonious-jackson" % "thrift_[thift_version]_spark[spark_major_version]-0.2.0"
 ```

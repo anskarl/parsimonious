@@ -1,4 +1,4 @@
-namespace java io.github.anskarl.parsimonious
+namespace java com.github.anskarl.parsimonious
 
 enum EnumDummy {
     YES

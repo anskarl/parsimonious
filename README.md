@@ -242,3 +242,62 @@ To decode from JSON back to Thrift POJO:
 // Decode from Json
 val decoded: BasicDummy = JsonThriftConverter.convert(classOf[BasicDummy], encoded)
 ```
+
+## Dependencies
+
+Version variants published in `oss.sonatype.org`
+ - scala_version: 2.12, 2.13
+ - thrift_version: 0.10.0, 0.13.0
+ - spark_major_version: 2 (i.e., 2.4.x), 3 (i.e., 3.1.x)
+ 
+#### Maven
+
+***parsimonious-commons***:
+```
+<dependency>
+  <groupId>com.github.anskarl</groupId>
+  <artifactId>parsimonious-commons_[scala_version]</artifactId>
+  <version>thrift_[thift_version]-0.2.0-SNAPSHOT</version>
+</dependency>
+```
+
+***parsimonious-jackon***:
+```
+<dependency>
+  <groupId>com.github.anskarl</groupId>
+  <artifactId>parsimonious-jackon_[scala_version]</artifactId>
+  <version>thrift_[thift_version]-0.2.0-SNAPSHOT</version>
+</dependency>
+```
+
+***parsimonious-spark***:
+```
+<dependency>
+  <groupId>com.github.anskarl</groupId>
+  <artifactId>parsimonious-spark_[scala_version]</artifactId>
+  <version>thrift_[thift_version]_spark[spark_major_version]-0.2.0-SNAPSHOT</version>
+</dependency>
+```
+
+#### SBT
+
+See the [official docs](https://www.scala-sbt.org/1.x/docs/Resolvers.html) to configure Sonatype (snapshots) 
+resolver in your SBT project. For example:
+```
+resolvers += Resolver.sonatypeRepo("public") //  (or “snapshots”, “staging”, “releases”) 
+```
+
+***parsimonious-commons***:
+```
+"com.github.anskarl" %% "parsimonious-commons" % "thrift_[thift_version]-0.2.0-SNAPSHOT"
+```
+
+***parsimonious-jackon***:
+```
+"com.github.anskarl" %% "parsimonious-jackson" % "thrift_[thift_version]-0.2.0-SNAPSHOT"
+```
+
+***parsimonious-spark***:
+```
+"com.github.anskarl" %% "parsimonious-jackson" % "thrift_[thift_version]_spark[spark_major_version]-0.2.0-SNAPSHOT"
+```

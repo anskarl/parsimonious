@@ -53,10 +53,8 @@ def thriftCmd(majorVersion: String): String = majorVersion match {
   case _ =>
     s"docker run -v ${file(".").getAbsoluteFile.toString}:${file(".").getAbsoluteFile.toString} --workdir ${file(".").getAbsoluteFile.toString} jaegertracing/thrift:${majorVersion} thrift"
 }
-
-def module(name: String, versionPrefix: String) =
+def module(name: String): Project =
   Project(s"parsimonious-${name}", file(name))
-    .settings(version := s"${versionPrefix}-${version.value}")
     .settings(scalaVersion := DefaultScalaVersion)
     .settings(
       organization := "com.github.anskarl",
@@ -72,7 +70,10 @@ def module(name: String, versionPrefix: String) =
     .settings(libraryDependencies ++= Dependencies.TestDependencies)
     .settings(libraryDependencies += Dependencies.ScalaCheck)
 
+def module(name: String, versionPrefix: String): Project = module(name).settings(version := s"${versionPrefix}-${version.value}")
+
 lazy val commons = module("commons", s"thrift_${thriftMajorVersion}")
+  .disablePlugins(ScroogeSBT)
   .settings(crossScalaVersions := DefaultCrossScalaVersions)
   .settings(libraryDependencies += Dependencies.thrift(thriftVersion))
   .settings(libraryDependencies += Dependencies.JavaXAnnotationApi)
@@ -92,12 +93,36 @@ lazy val jackson = module("jackson", s"thrift_${thriftMajorVersion}")
   .settings(crossScalaVersions := DefaultCrossScalaVersions)
   .settings(libraryDependencies ++= Dependencies.Jackson)
 
+
 lazy val spark = module("spark", s"thrift_${thriftMajorVersion}_${sparkProfile}")
   .dependsOn(commons % "compile->compile;test->test")
   .settings(crossScalaVersions := (if(sparkProfile == "spark2") Seq(DefaultScalaVersion) else DefaultCrossScalaVersions  ))
   .settings(resolvers += ("Twitter Maven Repo" at "http://maven.twttr.com").withAllowInsecureProtocol(true))
   .settings(libraryDependencies ++= Dependencies.sparkDependenciesFor(sparkProfile))
   .settings(libraryDependencies ++= Dependencies.Jackson)
+
+
+lazy val scroogeCommons = module("scrooge-commons")
+  .disablePlugins(ThriftPlugin)
+  .settings(crossScalaVersions := DefaultCrossScalaVersions)
+  .settings(libraryDependencies += Dependencies.thrift("0.10.0"))
+  .settings(libraryDependencies ++= Dependencies.Finagle)
+  .settings(libraryDependencies ++= Dependencies.Scrooge)
+  .settings(libraryDependencies += Dependencies.JavaXAnnotationApi)
+  .settings(libraryDependencies += Dependencies.UtilBackports)
+  .settings(libraryDependencies += Dependencies.ScalaCollectionCompat)
+  .settings(
+    dependencyOverrides += "org.apache.thrift" % "libthrift" % "0.10.0",
+    dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-core" % Dependencies.v.Jackson,
+    dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-databind" % Dependencies.v.Jackson
+  )
+
+
+lazy val scroogeJackson = module("scrooge-jackson")
+  .dependsOn(scroogeCommons % "compile->compile;test->test")
+  .settings(crossScalaVersions := DefaultCrossScalaVersions)
+  .settings(libraryDependencies ++= Dependencies.Jackson)
+
 
 lazy val root = Project("parsimonious", file("."))
   .settings(scalaVersion := DefaultScalaVersion)

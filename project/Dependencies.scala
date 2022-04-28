@@ -12,9 +12,6 @@ object Dependencies {
         final val Hadoop3 = "3.3.1"
         final val Parquet12 = "1.12.2"
 
-        // final val Thrift = "0.10.0"
-        // final val Thrift = "0.13.0"
-
         final val ScalaTest = "3.2.11"
         final val ScalaTestPlus = "3.2.11.0"
         final val ScalaCheck = "1.15.4"
@@ -26,6 +23,10 @@ object Dependencies {
         final val ScalaCollectionCompat = "2.7.0"
 
         final val JavaXAnnotationApi = "1.3.2"
+
+
+//        final val Thrift10 = "0.10.0"
+        final val TwitterLib = "22.4.0"
     }
 
 
@@ -80,7 +81,7 @@ object Dependencies {
         "com.fasterxml.jackson.module" %% "jackson-module-scala" % v.Jackson
     )
 
-    def thrift(version: String) = "org.apache.thrift" % "libthrift" % version excludeAll (
+    def thrift(version: String): ModuleID = "org.apache.thrift" % "libthrift" % version excludeAll (
       ExclusionRule("org.apache.httpcomponents", "httpclient"),
       ExclusionRule("org.apache.httpcomponents", "httpcore"),
       ExclusionRule("org.slf4j", "slf4j-api")
@@ -91,5 +92,16 @@ object Dependencies {
         "org.slf4j" % "slf4j-nop" % v.SLF4J % Test,
         "org.scalatest" %% "scalatest" % v.ScalaTest % Test,
         "org.scalacheck" %% "scalacheck" % v.ScalaCheck % Test
+    )
+
+    lazy val Finagle = Seq(
+        "com.twitter" %% "finagle-core" % v.TwitterLib exclude ("com.twitter", "libthrift"),
+        "com.twitter" %% "finagle-http" % v.TwitterLib exclude ("com.twitter", "libthrift"),
+        "com.twitter" %% "finagle-thrift" % v.TwitterLib exclude ("com.twitter", "libthrift"))
+
+    lazy val Scrooge = Seq(
+        "com.twitter" %% "scrooge-core" % v.TwitterLib exclude ("com.twitter", "libthrift"),
+        "com.twitter" %% "scrooge-generator" % v.TwitterLib % "provided" exclude ("com.twitter", "libthrift")
+//        "com.twitter" %% "scrooge-serializer" % v.TwitterLib
     )
 }

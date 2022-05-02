@@ -18,7 +18,7 @@ object Dependencies {
 
         final val UtilBackports = "2.1"
         final val SLF4J = "1.7.25"
-        final val Jackson = "2.13.0"
+        final val Jackson = "2.13.2"
 
         final val ScalaCollectionCompat = "2.7.0"
 

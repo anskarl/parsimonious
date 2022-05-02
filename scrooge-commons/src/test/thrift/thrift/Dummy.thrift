@@ -51,6 +51,7 @@ union UnionRecursiveDummy {
     2: UnionRecursiveDummy ur
 }
 
+
 struct ComplexDummy {
     1: optional list<BasicDummy> bdList
     2: optional set<BasicDummy> bdSet

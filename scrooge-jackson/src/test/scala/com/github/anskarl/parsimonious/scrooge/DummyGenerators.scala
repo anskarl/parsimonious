@@ -4,7 +4,6 @@ import com.github.anskarl.parsimonious.{BasicDummy, ComplexDummy, EnumDummy, Uni
 import org.scalacheck.{Arbitrary, Gen}
 
 import java.nio.ByteBuffer
-//import scala.collection.JavaConverters._
 import scala.jdk.CollectionConverters._
 
 trait DummyGenerators {

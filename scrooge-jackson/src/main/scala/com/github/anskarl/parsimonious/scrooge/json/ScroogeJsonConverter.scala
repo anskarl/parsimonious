@@ -1,9 +1,9 @@
-package com.github.anskarl.parsimonious.scrooge
+package com.github.anskarl.parsimonious.scrooge.json
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.github.anskarl.parsimonious.{ComplexDummy, UnionDummy, UnionRecursiveDummy}
-import com.twitter.scrooge.{ThriftEnum, ThriftStruct, ThriftStructFieldInfo, ThriftUnion}
+import com.github.anskarl.parsimonious.scrooge._
+import com.twitter.scrooge._
 import org.apache.thrift.protocol.TType
 
 import java.nio.ByteBuffer
@@ -15,7 +15,7 @@ object ScroogeJsonConverter {
 
   def convert[T <: ThriftStruct with Product](instance: T): ObjectNode ={
     val codec = com.twitter.scrooge.ThriftStructCodec.forStructClass(instance.getClass)
-    val fieldInfos: Seq[ThriftStructFieldInfo] = getFieldInfos(codec)
+    val fieldInfos: Seq[ThriftStructFieldInfo] = ScroogeHelpers.getFieldInfos(codec)
 
     if(codec.metaData.unionFields.isEmpty) convertStruct(instance, fieldInfos)
     else convertUnion(instance.asInstanceOf[ThriftUnion])
@@ -83,9 +83,9 @@ object ScroogeJsonConverter {
       case TType.MAP =>
 
         val keyManifest = fieldInfo.keyManifest.get
-        val keyThriftStructFieldInfo = getThriftStructFieldInfo(fieldInfo.tfield.name+"_key", keyManifest)
+        val keyThriftStructFieldInfo = ScroogeHelpers.getThriftStructFieldInfo(fieldInfo.tfield.name+"_key", keyManifest)
         val valueManifest = fieldInfo.valueManifest.get
-        val valueThriftStructFieldInfo = getThriftStructFieldInfo(fieldInfo.tfield.name+"_value", valueManifest)
+        val valueThriftStructFieldInfo = ScroogeHelpers.getThriftStructFieldInfo(fieldInfo.tfield.name+"_value", valueManifest)
 
 
         if(fieldInfo.isOptional) elm.asInstanceOf[Option[_]].map(e => convertMap(keyThriftStructFieldInfo, valueThriftStructFieldInfo, e))
@@ -93,7 +93,7 @@ object ScroogeJsonConverter {
 
       case TType.LIST | TType.SET =>
         val valueManifest = fieldInfo.valueManifest.get
-        val valueThriftStructFieldInfo = getThriftStructFieldInfo(fieldInfo.tfield.name+"_value", valueManifest)
+        val valueThriftStructFieldInfo = ScroogeHelpers.getThriftStructFieldInfo(fieldInfo.tfield.name+"_value", valueManifest)
 
         val elementsOpt =
           if(fieldInfo.isOptional)
@@ -134,8 +134,8 @@ object ScroogeJsonConverter {
     else {
       val elements = keyVals.map{case (k,v) =>
         val objNode = nodeFactory.objectNode()
-        objNode.replace(keyName, k)
-        objNode.replace(valName, v)
+        objNode.replace(Constants.keyName, k)
+        objNode.replace(Constants.valName, v)
         objNode
       }.toSeq
 
@@ -143,65 +143,4 @@ object ScroogeJsonConverter {
     }
   }
 
-}
-
-object DeleteMeEnc extends App {
-
-  import com.github.anskarl.parsimonious.{BasicDummy, EnumDummy, NestedDummy, PropertyValue}
-
-  /*
-  struct ComplexDummy {
-    1: optional list<BasicDummy> bdList
-    2: optional set<BasicDummy> bdSet
-    3: optional map<string, BasicDummy> strToBdMap
-    4: optional map<BasicDummy, string> bdToStrMap
-    5: optional EnumDummy enumDummy
-    6: optional UnionDummy unionDummy
-    7: optional UnionRecursiveDummy unionRecursiveDummy
-}
-   */
-
-
-//  val instance = BasicDummy(
-//    reqStr = "req_str",
-//    str = Some("opt_str"),
-//    int16 = Some(16.toShort),
-//    enm = Some(EnumDummy.No),
-//    bl=Some(true),
-////    listNumbersI32 = Some(List(1,2,3)),
-//    listNumbersI32 = Some(List.empty),
-//    listStruct = Some(Seq(PropertyValue("prop1", "val1"))),
-//    listNumbersDouble= Some(List(1.1, 2.2, 3.3)),
-//    setNumbersI32 = Some(Set(1,2,3,4,4,3,2,1)),
-//    mapPrimitivesStr = Some(Map("a"-> 1.1, "b" -> 2.2)),
-//    mapPrimitives = Some(Map(1 -> 1.1, 2-> 2.2)),
-//    mapStructKey = Some(Map(
-//      PropertyValue("a", "aa") -> 1,
-//      PropertyValue("b", "bb") -> 2)
-//    ),
-//    bin = Some(ByteBuffer.wrap("foo".getBytes()))
-//  )
-//
-//  val nestedInstance = NestedDummy("str", basic= instance, basicOpt =None)
-//  val obj = ScroogeJsonConverter.convert(nestedInstance)
-//
-//  println(obj.toPrettyString)
-
-
-  val instanceComplexDummy = ComplexDummy(
-    bdList=Some(List()),
-    bdSet = Some(Set()),
-    strToBdMap = Some(Map()),
-    bdToStrMap = Some(Map()),
-    enumDummy = Some(EnumDummy.Maybe),
-    unionDummy = Some(UnionDummy.Str("aaa")),
-    unionRecursiveDummy = Some(UnionRecursiveDummy.Ur(ur = UnionRecursiveDummy.Ur(ur =UnionRecursiveDummy.Bl(bl = true))))
-  )
-//  val ser = com.twitter.scrooge.JsonThriftSerializer(UnionRecursiveDummy)
-//  println(ser.toString(UnionRecursiveDummy.Ur(ur = UnionRecursiveDummy.Ur(ur =UnionRecursiveDummy.Bl(bl = true)))))
-//
-//  println(UnionRecursiveDummy.Ur(ur = UnionRecursiveDummy.Ur(ur =UnionRecursiveDummy.Bl(bl = true))))
-
-  val objComplexDummy = ScroogeJsonConverter.convert(instanceComplexDummy)
-  println(objComplexDummy.toPrettyString)
 }

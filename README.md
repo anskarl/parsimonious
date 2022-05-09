@@ -9,9 +9,10 @@ The implementation for Spark is based on https://github.com/airbnb/airbnb-spark-
 Important features:
 
   - Supports all Thrift types, including unions and binary types. 
+  - Supports Twitter Scrooge generated classes.
   - Supports nested and recursive structures. Please note, for Spark, recursive structures are being serialized to bytes.
   - For Json, when a Thrift map does not have string type as a key (e.g., a struct) then _Parsimonious_ will convert it to a sequence of key, value tuples (the opposite during decoding to Thrift is also supported).
-
+  - (TODO) Scrooge Thrift and Apache Spark interoperability.
 ## Example usage
 
 More detailed examples can be found in unit tests (including nested and recursive structures).
@@ -243,6 +244,112 @@ To decode from JSON back to Thrift POJO:
 val decoded: BasicDummy = JsonThriftConverter.convert(classOf[BasicDummy], encoded)
 ```
 
+### Scrooge Thrift interoperability with Jackson for JSON support
+
+Encode/Decode Scrooge generated classes to/from Jackson node:
+
+```scala
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import com.github.anskarl.parsimonious.{BasicDummy, EnumDummy, NestedDummy, PropertyValue}
+import com.github.anskarl.parsimonious.scrooge._
+import java.nio.ByteBuffer
+
+val mapper = new ObjectMapper().registerModule(DefaultScalaModule)
+
+val sampleBasicDummy = BasicDummy(
+    reqStr = "required 101",
+    str = Option("optional 101"),
+    int16 = Option(16.toShort),
+    int32 = Option(32),
+    int64 = Option(64L),
+    dbl = Option(101.101),
+    byt = Option(8.toByte),
+    bl = Option(false),
+    bin = Option(ByteBuffer.wrap("101".getBytes("UTF-8"))),
+    listNumbersI32 = Option(List(1,2,3)),
+    listNumbersDouble = Option(List(1.1,2.2,3.3)),
+    setNumbersI32 = Option(Set(1,2,3)),
+    setNumbersDouble = Option(Set(1.1,2.2,3.3)),
+    enm = Option(EnumDummy.Maybe),
+    listStruct = Option(List(PropertyValue("prop1", "val1"),PropertyValue("prop2", "val2"))),
+    mapPrimitives = Option(Map(1 -> 1.1, 2 -> 2.2)),
+    mapStructKey = Option(Map(PropertyValue("prop1", "val1") -> 1.1, PropertyValue("prop2", "val2") -> 2.2)),
+    mapPrimitivesStr = Option(Map("one" -> 1.0, "two" -> 2.0))
+  )
+
+// Encode to JSON
+val encoded = ScroogeJsonConverter.convert(sampleBasicDummy)
+println(encoded.toPrettyString)
+```
+
+Will print the following:
+```json
+{
+  "reqStr" : "required 101",
+  "str" : "optional 101",
+  "int16" : 16,
+  "int32" : 32,
+  "int64" : 64,
+  "dbl" : 101.101,
+  "byt" : 8,
+  "bl" : false,
+  "bin" : "MTAx",
+  "listNumbersI32" : [ 1, 2, 3 ],
+  "listNumbersDouble" : [ 1.1, 2.2, 3.3 ],
+  "setNumbersI32" : [ 1, 2, 3 ],
+  "setNumbersDouble" : [ 1.1, 2.2, 3.3 ],
+  "enm" : "Maybe",
+  "listStruct" : [ {
+    "property" : "prop1",
+    "value" : "val1"
+  }, {
+    "property" : "prop2",
+    "value" : "val2"
+  } ],
+  "mapPrimitives" : [ {
+    "key" : 1,
+    "value" : 1.1
+  }, {
+    "key" : 2,
+    "value" : 2.2
+  } ],
+  "mapStructKey" : [ {
+    "key" : {
+      "property" : "prop1",
+      "value" : "val1"
+    },
+    "value" : 1.1
+  }, {
+    "key" : {
+      "property" : "prop2",
+      "value" : "val2"
+    },
+    "value" : 2.2
+  } ],
+  "mapPrimitivesStr" : {
+    "one" : 1.0,
+    "two" : 2.0
+  }
+}
+```
+Recall to Apache Thrift to JSON conversion, the type of key in both `mapPrimitives` and `mapStructKey` is not string.
+In such cases _Parsimonious_ converts them to lists of structs with the pair of fields
+`"key"` and `"value"`. That convention, is being performed since JSON does not support
+maps having keys with type different of string.
+
+To decode from JSON back to Scrooge class:
+```scala
+
+// Need to create once union builders, helper class to extract the schema and 
+// create builder for Scrooge Union (com.twitter.scrooge.ThriftUnion)
+implicit val unionBuilders = UnionBuilders.create(classOf[BasicDummy])
+
+// Decode to Scrooge class
+val decoded: BasicDummy = JsonScroogeConverter.convert(classOf[BasicDummy], encodedJson)
+```
+
 ## Dependencies
 
 Version variants published in `oss.sonatype.org`
@@ -257,16 +364,16 @@ Version variants published in `oss.sonatype.org`
 <dependency>
   <groupId>com.github.anskarl</groupId>
   <artifactId>parsimonious-commons_[scala_version]</artifactId>
-  <version>thrift_[thift_version]-0.2.0</version>
+  <version>thrift_[thift_version]-0.3.0</version>
 </dependency>
 ```
 
-***parsimonious-jackon***:
+***parsimonious-jackson***:
 ```
 <dependency>
   <groupId>com.github.anskarl</groupId>
-  <artifactId>parsimonious-jackon_[scala_version]</artifactId>
-  <version>thrift_[thift_version]-0.2.0</version>
+  <artifactId>parsimonious-jackson_[scala_version]</artifactId>
+  <version>thrift_[thift_version]-0.3.0</version>
 </dependency>
 ```
 
@@ -275,9 +382,29 @@ Version variants published in `oss.sonatype.org`
 <dependency>
   <groupId>com.github.anskarl</groupId>
   <artifactId>parsimonious-spark_[scala_version]</artifactId>
-  <version>thrift_[thift_version]_spark[spark_major_version]-0.2.0</version>
+  <version>thrift_[thift_version]_spark[spark_major_version]-0.3.0</version>
 </dependency>
 ```
+
+***parsimonious-scrooge-commons***:
+```
+<dependency>
+  <groupId>com.github.anskarl</groupId>
+  <artifactId>parsimonious-scrooge-commons_[scala_version]</artifactId>
+  <version>thrift_[thift_version]-0.3.0</version>
+</dependency>
+```
+
+
+***parsimonious-scrooge-jackson***:
+```
+<dependency>
+  <groupId>com.github.anskarl</groupId>
+  <artifactId>parsimonious-scrooge-jackson_[scala_version]</artifactId>
+  <version>thrift_[thift_version]-0.3.0</version>
+</dependency>
+```
+
 
 #### SBT
 
@@ -289,15 +416,26 @@ resolvers += Resolver.sonatypeRepo("public") //  (or “snapshots”, “staging
 
 ***parsimonious-commons***:
 ```
-"com.github.anskarl" %% "parsimonious-commons" % "thrift_[thift_version]-0.2.0"
+"com.github.anskarl" %% "parsimonious-commons" % "thrift_[thift_version]-0.3.0"
 ```
 
-***parsimonious-jackon***:
+***parsimonious-jackson***:
 ```
-"com.github.anskarl" %% "parsimonious-jackson" % "thrift_[thift_version]-0.2.0"
+"com.github.anskarl" %% "parsimonious-jackson" % "thrift_[thift_version]-0.3.0"
 ```
 
 ***parsimonious-spark***:
 ```
-"com.github.anskarl" %% "parsimonious-jackson" % "thrift_[thift_version]_spark[spark_major_version]-0.2.0"
+"com.github.anskarl" %% "parsimonious-spark" % "thrift_[thift_version]_spark[spark_major_version]-0.3.0"
+```
+
+***parsimonious-scrooge-commons***:
+```
+"com.github.anskarl" %% "parsimonious-scrooge-commons" % "thrift_[thift_version]-0.3.0"
+```
+
+
+***parsimonious-scrooge-jackson***:
+```
+"com.github.anskarl" %% "parsimonious-scrooge-jackson" % "thrift_[thift_version]-0.3.0"
 ```

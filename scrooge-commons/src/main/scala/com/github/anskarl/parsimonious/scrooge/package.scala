@@ -2,6 +2,7 @@ package com.github.anskarl.parsimonious
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import org.apache.thrift.protocol.TCompactProtocol
 
 
 package object scrooge {
@@ -13,6 +14,10 @@ package object scrooge {
   object Constants {
     final val keyName = "key"
     final val valName = "value"
+
+    final val DefaultSizeHint = 512
+
+    final val DefaultProtocolFactory = new TCompactProtocol.Factory
   }
 
 }

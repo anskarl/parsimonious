@@ -33,4 +33,13 @@ object ScroogeHelpers {
 
     new ThriftStructFieldInfo(tField ,false, typeManifest, None, None)
   }
+
+  def isPrimitive(fieldInfo: ThriftStructFieldInfo): Boolean = {
+    val typeClass = fieldInfo.manifest.runtimeClass
+    (fieldInfo.tfield.`type` != TType.STRUCT
+      && typeClass != classOf[ByteBuffer]
+      && typeClass != classOf[Seq[_]]
+      && typeClass != classOf[Set[_]]
+      && typeClass != classOf[Map[_,_]])
+  }
 }

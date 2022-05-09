@@ -4,7 +4,7 @@ import sbt.Keys._
 object Dependencies {
 
     object v {
-        final val Spark2 = "2.4.5"
+        final val Spark2 = "2.4.6"
         final val Hadoop2 = "2.10.0"
         final val Parquet10 = "1.10.1"
 
@@ -43,7 +43,10 @@ object Dependencies {
             // Test dependencies Hadoop
             "org.apache.hadoop" % "hadoop-minicluster" % hadoopVersion % Test,
             // Spark
-            "org.apache.spark" %% "spark-core" % sparkVersion % Provided exclude("org.apache.hadoop", "hadoop-client"),
+            "org.apache.spark" %% "spark-core" % sparkVersion % Provided excludeAll(
+              ExclusionRule("org.apache.hadoop", "hadoop-client"),
+              ExclusionRule("org.json4s", "json4s-jackson")
+            ),
             "org.apache.spark" %% "spark-sql" % sparkVersion % Provided exclude("org.apache.hadoop", "hadoop-client"),
             "org.apache.spark" %% "spark-catalyst" % sparkVersion % Provided exclude("org.apache.hadoop", "hadoop-client"),
             // Test dependencies Spark

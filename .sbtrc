@@ -1,21 +1,37 @@
-alias build-commons = ;+parsimonious-commons/clean ;+parsimonious-jackson/test ;+parsimonious-commons/package
+alias build-commons = ;+parsimonious-commons/clean ;+parsimonious-commons/test ;+parsimonious-commons/package
+
+alias build-spark-commons = ;+parsimonious-spark-commons/clean ;+parsimonious-spark-commons/test ;+parsimonious-spark-commons/package
+
+alias build-scrooge-commons = ;+parsimonious-scrooge-commons/clean ;+parsimonious-scrooge-commons/test ;+parsimonious-scrooge-commons/package
 
 alias build-jackson = ;+parsimonious-jackson/clean ;+parsimonious-jackson/test ;+parsimonious-jackson/package
+
+alias build-scrooge-jackson = ;+parsimonious-scrooge-jackson/clean ;+parsimonious-scrooge-jackson/test ;+parsimonious-scrooge-jackson/package
 
 alias build-spark = ;+parsimonious-spark/clean ;parsimonious-spark/test ;+parsimonious-spark/package
 
 alias publish-commons = ;+parsimonious-commons/publish
 
+alias publish-scrooge-commons = ;+parsimonious-scrooge-commons/publish
+
+alias publish-spark-commons = ;+parsimonious-spark-commons/publish
+
 alias publish-jackson = ;+parsimonious-jackson/publish
+
+alias publish-scrooge-jackson = ;+parsimonious-scrooge-jackson/publish
 
 alias publish-spark = ;+parsimonious-spark/publish
 
 alias publish-local-commons = ;+parsimonious-commons/publishLocal
 
+alias publish-local-spark-commons = ;+parsimonious-spark-commons/publishLocal
+
 alias publish-local-jackson = ;+parsimonious-jackson/publishLocal
+
+alias publish-local-scrooge-jackson = ;+parsimonious-scrooge-jackson/publishLocal
 
 alias publish-local-spark = ;+parsimonious-spark/publishLocal
 
-alias build-all = ;build-commons ;build-jackson ;build-spark
+alias build-all = ;build-commons ;build-spark-commons ;build-jackson ;build-spark ;build-scrooge-commons ;build-scrooge-jackson
 
-alias publish-all = ;publish-commons ;publish-jackson ;publish-spark
+alias publish-all = ;publish-commons ;publish-commons-spark ;publish-jackson ;publish-spark ;publish-scrooge-jackson

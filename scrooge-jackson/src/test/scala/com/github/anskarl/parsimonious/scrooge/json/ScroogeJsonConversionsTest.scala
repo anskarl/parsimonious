@@ -1,8 +1,7 @@
 package com.github.anskarl.parsimonious.scrooge.json
 
-import com.github.anskarl.parsimonious.scrooge.{DummyGenerators, UnionBuilders}
-import com.github.anskarl.parsimonious.scrooge.json.{JsonScroogeConverter, ScroogeJsonConverter}
-import com.github.anskarl.parsimonious.{ComplexDummy, UnionRecursiveDummy}
+import com.github.anskarl.parsimonious.scrooge.UnionBuilders
+import com.github.anskarl.parsimonious.{ComplexDummy, DummyGenerators, UnionRecursiveDummy}
 import org.scalacheck.Gen
 import org.scalacheck.Prop.forAll
 import org.scalatest.matchers.must.Matchers

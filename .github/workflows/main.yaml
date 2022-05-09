@@ -27,20 +27,18 @@ jobs:
           key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt') }}
       - name: Build parsimonious-commons (thrift ${{ matrix.thrift_version }})
         run: THRIFT_VERSION=${{ matrix.thrift_version }} sbt build-commons
+      - name: Build parsimonious-scrooge-commons (thrift ${{ matrix.thrift_version }})
+        run: THRIFT_VERSION=${{ matrix.thrift_version }} sbt build-scrooge-commons
+      - name: Build parsimonious-spark-commons (thrift ${{ matrix.thrift_version }})
+        run: THRIFT_VERSION=${{ matrix.thrift_version }} sbt build-spark-commons
       - name: Build parsimonious-jackson (thrift ${{ matrix.thrift_version }})
         run: THRIFT_VERSION=${{ matrix.thrift_version }} sbt build-jackson
+      - name: Build parsimonious-scrooge-jackson (thrift ${{ matrix.thrift_version }})
+        run: THRIFT_VERSION=${{ matrix.thrift_version }} sbt build-scrooge-jackson
       - name: Build parsimonious-spark (thrift ${{ matrix.thrift_version }}, spark 2.4)
         run: THRIFT_VERSION=${{ matrix.thrift_version }} SPARK_PROFILE=spark2 sbt build-spark
       - name: Build parsimonious-spark (thrift ${{ matrix.thrift_version }}, spark 3.2)
         run: THRIFT_VERSION=${{ matrix.thrift_version }} SPARK_PROFILE=spark3 sbt build-spark
 
-#      - name: Publish parsimonious-commons (thrift ${{ matrix.thrift_version }})
-#        run: THRIFT_VERSION=${{ matrix.thrift_version }} sbt publish-commons
-#      - name: Publish parsimonious-jackson (thrift ${{ matrix.thrift_version }})
-#        run: THRIFT_VERSION=${{ matrix.thrift_version }} sbt publish-jackson
-#      - name: Publish parsimonious-spark (thrift ${{ matrix.thrift_version }}, spark 2.4)
-#        run: THRIFT_VERSION=${{ matrix.thrift_version }} SPARK_PROFILE=spark2 sbt publish-spark
-#      - name: Publish parsimonious-spark (thrift ${{ matrix.thrift_version }}, spark 3.2)
-#        run: THRIFT_VERSION=${{ matrix.thrift_version }} SPARK_PROFILE=spark3 sbt publish-spark
     env:
       GITHUB_TOKEN: ${{ github.token }}

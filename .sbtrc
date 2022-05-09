@@ -34,4 +34,4 @@ alias publish-local-spark = ;+parsimonious-spark/publishLocal
 
 alias build-all = ;build-commons ;build-spark-commons ;build-jackson ;build-spark ;build-scrooge-commons ;build-scrooge-jackson
 
-alias publish-all = ;publish-commons ;publish-commons-spark ;publish-jackson ;publish-spark ;publish-scrooge-jackson
+alias publish-all = ;publish-commons ;publish-spark-commons ;publish-jackson ;publish-spark ;publish-scrooge-commons ;publish-scrooge-jackson

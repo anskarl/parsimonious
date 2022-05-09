@@ -1,10 +1,8 @@
-package com.github.anskarl.parsimonious.scrooge
+package com.github.anskarl.parsimonious
 
-import com.github.anskarl.parsimonious.{BasicDummy, ComplexDummy, EnumDummy, UnionDummy, UnionRecursiveDummy}
 import org.scalacheck.{Arbitrary, Gen}
 
 import java.nio.ByteBuffer
-import scala.jdk.CollectionConverters._
 
 trait DummyGenerators {
   implicit val arbBasicDummy: Arbitrary[BasicDummy] = Arbitrary(

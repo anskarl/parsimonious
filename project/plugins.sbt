@@ -5,3 +5,5 @@ addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.9.12")
 addSbtPlugin("com.jsuereth" % "sbt-pgp" % "2.0.1")
 
 addSbtPlugin("com.twitter" % "scrooge-sbt-plugin" % "22.4.0")
+
+addDependencyTreePlugin

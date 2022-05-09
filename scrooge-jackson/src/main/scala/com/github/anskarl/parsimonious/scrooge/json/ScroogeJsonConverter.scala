@@ -21,7 +21,7 @@ object ScroogeJsonConverter {
     else convertUnion(instance.asInstanceOf[ThriftUnion])
   }
 
-  def convertUnion[T <: ThriftUnion](instance: T): ObjectNode = {
+  private def convertUnion[T <: ThriftUnion](instance: T): ObjectNode = {
     val fieldInfo = instance.unionStructFieldInfo.get
     mapper.createObjectNode().tap{ node =>
       convertScroogeElmToJSONElm(instance.containedValue(), fieldInfo)
@@ -29,7 +29,7 @@ object ScroogeJsonConverter {
     }
   }
 
-  def convertStruct[T <: ThriftStruct with Product](instance: T, fieldInfos: Seq[ThriftStructFieldInfo]): ObjectNode ={
+  private def convertStruct[T <: ThriftStruct with Product](instance: T, fieldInfos: Seq[ThriftStructFieldInfo]): ObjectNode ={
     fieldInfos.zipWithIndex.foldLeft(mapper.createObjectNode()){
       case (node, (fieldInfo, index)) =>
         val elm = instance.productElement(index)
@@ -39,16 +39,15 @@ object ScroogeJsonConverter {
     }
   }
 
-  def decodeSingle[T](elm: Any, fieldInfo: ThriftStructFieldInfo): Option[T] =
+  private def decodeSingle[T](elm: Any, fieldInfo: ThriftStructFieldInfo): Option[T] =
     if(fieldInfo.isOptional) elm.asInstanceOf[Option[T]] else Option(elm.asInstanceOf[T])
 
-  def convertScroogeElmToJSONElm(elm: Any, fieldInfo: ThriftStructFieldInfo): Option[JsonNode] = {
+  private def convertScroogeElmToJSONElm(elm: Any, fieldInfo: ThriftStructFieldInfo): Option[JsonNode] = {
     val fieldType = fieldInfo.tfield.`type`
 
     fieldType match {
       case TType.BOOL =>
-        decodeSingle[Boolean](elm, fieldInfo)
-          .map(decodedEntry => nodeFactory.booleanNode(decodedEntry))
+        decodeSingle[Boolean](elm, fieldInfo).map(decodedEntry => nodeFactory.booleanNode(decodedEntry))
 
       case TType.BYTE =>
         decodeSingle[Byte](elm, fieldInfo)

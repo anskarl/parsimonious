@@ -1,6 +1,6 @@
 package com.github.anskarl.parsimonious.spark
 
-import com.github.anskarl.parsimonious.BasicDummy
+import com.github.anskarl.parsimonious.pojo.models._
 import com.github.anskarl.parsimonious.spark.Converters._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.StructType

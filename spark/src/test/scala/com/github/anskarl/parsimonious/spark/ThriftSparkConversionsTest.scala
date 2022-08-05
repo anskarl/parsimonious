@@ -1,6 +1,7 @@
 package com.github.anskarl.parsimonious.spark
 
-import com.github.anskarl.parsimonious._
+import com.github.anskarl.parsimonious.pojo.models._
+import com.github.anskarl.parsimonious.DummyGenerators
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._

@@ -1,7 +1,7 @@
 package com.github.anskarl.parsimonious
 
+import com.github.anskarl.parsimonious.pojo.models._
 import org.scalacheck.{Arbitrary, Gen}
-//import scala.collection.JavaConverters._
 import scala.jdk.CollectionConverters._
 import scala.util.chaining._
 

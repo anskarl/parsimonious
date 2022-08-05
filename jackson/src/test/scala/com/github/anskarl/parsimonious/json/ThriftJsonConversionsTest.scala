@@ -1,8 +1,7 @@
 package com.github.anskarl.parsimonious.json
 
-
-
-import com.github.anskarl.parsimonious.{ComplexDummy, DummyGenerators, UnionRecursiveDummy}
+import com.github.anskarl.parsimonious.pojo.models._
+import com.github.anskarl.parsimonious.DummyGenerators
 import org.scalacheck.Prop.forAll
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.matchers.must.Matchers

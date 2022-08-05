@@ -131,6 +131,19 @@ lazy val scroogeJackson = module("scrooge-jackson")
   .settings(libraryDependencies ++= Dependencies.Jackson)
 
 
+lazy val scroogeSpark = module("scrooge-spark", s"thrift_${thriftMajorVersion}_${sparkProfile}")
+  .dependsOn(scroogeCommons % "compile->compile;test->test")
+  .dependsOn(sparkCommons % "compile->compile;test->test")
+  .settings(crossScalaVersions := (if(sparkProfile == "spark2") Seq(DefaultScalaVersion) else DefaultCrossScalaVersions  ))
+  .settings(resolvers += ("Twitter Maven Repo" at "http://maven.twttr.com").withAllowInsecureProtocol(true))
+  .settings(libraryDependencies ++= Dependencies.sparkDependenciesFor(sparkProfile))
+  .settings(libraryDependencies ++= Dependencies.Jackson)
+  .settings(dependencyOverrides += "org.json4s" %% "json4s-ast" % "3.7.0-M11")
+  .settings(dependencyOverrides += "org.json4s" %% "json4s-core" % "3.7.0-M11")
+  .settings(dependencyOverrides += "org.json4s" %% "json4s-jackson" % "3.7.0-M11")
+  .settings(dependencyOverrides += "org.json4s" %% "json4s-scalap" % "3.7.0-M11")
+
+
 lazy val root = Project("parsimonious", file("."))
   .settings(scalaVersion := DefaultScalaVersion)
   .settings(Seq(publish := {}, publishLocal := {}, publish / skip := true))

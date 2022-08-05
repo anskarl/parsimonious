@@ -3,7 +3,7 @@ package com.github.anskarl.parsimonious.scrooge.json
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import com.github.anskarl.parsimonious.{BasicDummy, EnumDummy, NestedDummy, PropertyValue}
+import com.github.anskarl.parsimonious.scrooge.models._
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 import com.github.anskarl.parsimonious.scrooge._
@@ -11,7 +11,7 @@ import java.nio.ByteBuffer
 import scala.collection.JavaConverters._
 import scala.util.chaining.scalaUtilChainingOps
 
-class MinimalJsonTest extends AnyWordSpecLike  with Matchers {
+class MinimalJsonTest extends AnyWordSpecLike with Matchers {
   private val mapper = new ObjectMapper().registerModule(DefaultScalaModule)
   private val sampleJson = s"""
       |{

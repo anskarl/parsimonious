@@ -1,6 +1,7 @@
-package com.github.anskarl.parsimonious
+package com.github.anskarl.parsimonious.scrooge
 
 import org.scalacheck.{Arbitrary, Gen}
+import com.github.anskarl.parsimonious.scrooge.models._
 
 import java.nio.ByteBuffer
 

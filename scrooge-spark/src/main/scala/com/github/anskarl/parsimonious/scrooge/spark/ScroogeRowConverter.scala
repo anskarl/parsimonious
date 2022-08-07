@@ -1,6 +1,6 @@
 package com.github.anskarl.parsimonious.scrooge.spark
 
-import com.github.anskarl.parsimonious.scrooge.{ByteArrayEncoder, Constants, ScroogeHelpers}
+import com.github.anskarl.parsimonious.scrooge.{ByteArrayThriftEncoder, Constants, ScroogeHelpers}
 import com.twitter.scrooge.{ThriftEnum, ThriftStruct, ThriftStructCodec, ThriftStructFieldInfo, ThriftUnion}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
@@ -157,8 +157,8 @@ object ScroogeRowConverter extends ScroogeRowConverterSchema {
 
       case TType.STRUCT =>
         if(fieldInfo.manifest.runtimeClass.getName == codec.metaData.structClassName){
-          if(fieldInfo.isOptional) elm.asInstanceOf[Option[ThriftStruct]].map(s => ByteArrayEncoder(s))
-          else ByteArrayEncoder(elm.asInstanceOf[ThriftStruct])
+          if(fieldInfo.isOptional) elm.asInstanceOf[Option[ThriftStruct]].map(s => ByteArrayThriftEncoder(s))
+          else ByteArrayThriftEncoder(elm.asInstanceOf[ThriftStruct])
         }
         else {
           if(fieldInfo.isOptional) elm.asInstanceOf[Option[ThriftStruct with Product]].map(value => convert(value)).orNull

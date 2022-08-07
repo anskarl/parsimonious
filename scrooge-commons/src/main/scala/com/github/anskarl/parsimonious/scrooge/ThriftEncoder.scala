@@ -30,7 +30,7 @@ trait ThriftEncoder {
   final def apply[T <: ThriftStruct](obj: T): Output = apply(obj, Constants.DefaultSizeHint)
 }
 
-object ByteArrayEncoder extends ThriftEncoder {
+object ByteArrayThriftEncoder extends ThriftEncoder {
   type Output = Array[Byte]
   type Transport = TArrayByteTransport
 
@@ -43,7 +43,7 @@ object ByteArrayEncoder extends ThriftEncoder {
   def getOutput(transport: TArrayByteTransport): Array[Byte] = transport.toByteArray
 }
 
-object ByteBufferEncoder extends ThriftEncoder {
+object ByteBufferThriftEncoder extends ThriftEncoder {
   type Output = NByteBuffer
   type Transport = TByteBuffer
 

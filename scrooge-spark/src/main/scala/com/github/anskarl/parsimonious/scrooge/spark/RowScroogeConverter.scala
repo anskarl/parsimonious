@@ -1,7 +1,8 @@
 package com.github.anskarl.parsimonious.scrooge.spark
 
-import com.github.anskarl.parsimonious.scrooge.{ScroogeHelpers, ThriftStructWithProduct, UnionBuilders}
+import com.github.anskarl.parsimonious.scrooge.{ByteArrayThriftDecoder, ScroogeHelpers, ThriftStructWithProduct, UnionBuilders}
 import com.twitter.scrooge.{StructBuilderFactory, ThriftEnumObject, ThriftStruct, ThriftStructCodec, ThriftStructFieldInfo}
+import io.netty.handler.codec.bytes.ByteArrayDecoder
 import org.apache.spark.sql.Row
 import org.apache.thrift.protocol.TType
 
@@ -18,25 +19,21 @@ object RowScroogeConverter {
     val codec: ThriftStructCodec[T] = com.twitter.scrooge.ThriftStructCodec.forStructClass(structClass)
     val isUnion = codec.metaData.unionFields.nonEmpty
 
-    if(isUnion) convertUnion(row, codec) //todo: not sure if needed
+    if(isUnion) convertUnion(row, codec)
     else convertStruct(row, codec.asInstanceOf[ThriftStructCodec[T] with StructBuilderFactory[T]])
   }
 
-  //todo: not sure if needed
   def convertUnion[T <: ThriftStruct: ru.TypeTag](row: Row, codec: ThriftStructCodec[T])(implicit unionBuilders: UnionBuilders): T = {
     val unionFields = codec.metaData.unionFields
-//    val fieldName = codec.metaData.structName
-    val fieldNames: Seq[String] = unionFields.map(_.structFieldInfo.tfield.name)
 
-    val (fieldName, index) = row.schema
-      .fieldNames.zipWithIndex
-      .find{ case (fieldName, index) => !row.isNullAt(index) }
+    val (fieldName, index) = row.schema.fieldNames.zipWithIndex
+      .find{ case (_, index) => !row.isNullAt(index) }
       .get
 
     val value = row.get(index)
     val thriftUnionFieldInfo = unionFields(index)
 
-    val element = convertRowElmToScroogeElm(value, thriftUnionFieldInfo.structFieldInfo.fieldInfo)
+    val element = convertRowElmToScroogeElm(value, thriftUnionFieldInfo.structFieldInfo.fieldInfo, codec)
 
     unionBuilders.build[T](codec, fieldName, element)
   }
@@ -49,7 +46,7 @@ object RowScroogeConverter {
       if(row.isNullAt(index)) builder.setField(index, None)
       else {
         val element = row(index)
-        val value = convertRowElmToScroogeElm(element, fieldInfo)
+        val value = convertRowElmToScroogeElm(element, fieldInfo, codecWithBuilder)
         builder.setField(index, value)
       }
     }
@@ -57,7 +54,7 @@ object RowScroogeConverter {
     builder.build()
   }
 
-  def convertRowElmToScroogeElm(elm: Any, fieldInfo: ThriftStructFieldInfo)(implicit unionBuilders: UnionBuilders): Any = {
+  def convertRowElmToScroogeElm(elm: Any, fieldInfo: ThriftStructFieldInfo, codec: ThriftStructCodec[_])(implicit unionBuilders: UnionBuilders): Any = {
     val fieldType = fieldInfo.tfield.`type`
 
     fieldType match {
@@ -74,22 +71,32 @@ object RowScroogeConverter {
           fieldInfo.convert(elm.asInstanceOf[String])
         else // when is Binary
           fieldInfo.convert(ByteBuffer.wrap(elm.asInstanceOf[Array[Byte]]))
+
       // struct/union
       case TType.STRUCT =>
-        val structClass = fieldInfo.manifest.runtimeClass.asInstanceOf[ThriftStructWithProduct]
-        fieldInfo.convert(convert(structClass, elm.asInstanceOf[Row]))
+        if(fieldInfo.manifest.runtimeClass.getName == codec.metaData.structClassName) {
+          val codecAny = codec.asInstanceOf[ThriftStructCodec[_ <: ThriftStruct]]
+
+          if(fieldInfo.isOptional) elm.asInstanceOf[Option[Array[Byte]]].map(s => ByteArrayThriftDecoder(codecAny, s))
+          else ByteArrayThriftDecoder(codecAny, elm.asInstanceOf[Array[Byte]])
+        }
+        else {
+          val structClass = fieldInfo.manifest.runtimeClass.asInstanceOf[ThriftStructWithProduct]
+          fieldInfo.convert(convert(structClass, elm.asInstanceOf[Row]))
+        }
+
       // collections
       case TType.LIST =>
         val seq = elm.asInstanceOf[scala.collection.Seq[Any]]
         val thriftStructFieldInfo = ScroogeHelpers.getThriftStructFieldInfo(fieldInfo.tfield.name+"_values", fieldInfo.valueManifest.get)
-        val values = convertRowElmSeqToScroogeElmSeq(seq,thriftStructFieldInfo)
+        val values = convertRowElmSeqToScroogeElmSeq(seq,thriftStructFieldInfo, codec)
 
         fieldInfo.convert(values.toList)
 
       case TType.SET =>
         val seq = elm.asInstanceOf[scala.collection.Seq[Any]]
         val thriftStructFieldInfo = ScroogeHelpers.getThriftStructFieldInfo(fieldInfo.tfield.name+"_values", fieldInfo.valueManifest.get)
-        val values = convertRowElmSeqToScroogeElmSeq(seq,thriftStructFieldInfo)
+        val values = convertRowElmSeqToScroogeElmSeq(seq,thriftStructFieldInfo, codec)
 
         fieldInfo.convert(values.toSet)
 
@@ -110,8 +117,8 @@ object RowScroogeConverter {
         }
 
         val keyVals =
-          convertRowElmSeqToScroogeElmSeq(keys.toSeq, keyThriftStructFieldInfo)
-            .zip(convertRowElmSeqToScroogeElmSeq(vals.toSeq, valueThriftStructFieldInfo))
+          convertRowElmSeqToScroogeElmSeq(keys.toSeq, keyThriftStructFieldInfo, codec)
+            .zip(convertRowElmSeqToScroogeElmSeq(vals.toSeq, valueThriftStructFieldInfo, codec))
             .toMap
 
         fieldInfo.convert(keyVals)
@@ -132,8 +139,9 @@ object RowScroogeConverter {
   @inline
   private def convertRowElmSeqToScroogeElmSeq(
     seq: Seq[Any],
-    fieldInfo: ThriftStructFieldInfo
-  )(implicit unionBuilders: UnionBuilders): Seq[Any] = seq.map(convertRowElmToScroogeElm(_, fieldInfo))
+    fieldInfo: ThriftStructFieldInfo,
+    codec: ThriftStructCodec[_]
+  )(implicit unionBuilders: UnionBuilders): Seq[Any] = seq.map(convertRowElmToScroogeElm(_, fieldInfo, codec))
 
   implicit class RichFieldInfo(val fieldInfo: ThriftStructFieldInfo) extends AnyVal{
     def convert(value: Any): Any =

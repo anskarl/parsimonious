@@ -16,7 +16,7 @@ import scala.reflect.ClassTag
 class Simple extends AnyWordSpecLike with SparkSessionTestSuite with Matchers {
 
 
-  val instanceBasic = BasicDummy(
+  val instanceBasic: BasicDummy = BasicDummy(
     reqStr = "required string",
     str = Option("foo"),
     int16 = Option(16.toShort),
@@ -37,21 +37,21 @@ class Simple extends AnyWordSpecLike with SparkSessionTestSuite with Matchers {
     mapPrimitivesStr = Option(Map("a"->1.1, "b"->2.2)),
   )
 
-  val instanceBasic2 = instanceBasic.copy(reqStr = "required string 2")
+  val instanceBasic2: BasicDummy = instanceBasic.copy(reqStr = "required string 2")
 
-  val instanceNested = NestedDummy("aaaa", instanceBasic)
+  val instanceNested: NestedDummy = NestedDummy("aaaa", instanceBasic)
 
-  val ur0 = Some(UnionRecursiveDummy.Bl(true))
-  val ur1 = Some(UnionRecursiveDummy.Ur(UnionRecursiveDummy.Bl(true))) //todo: fix it
-  val ur2 = Some(UnionRecursiveDummy.Ur(UnionRecursiveDummy.Ur(UnionRecursiveDummy.Bl(true)))) //todo: fix it
+//  val ur0 = Some(UnionRecursiveDummy.Bl(true))
+//  val ur1 = Some(UnionRecursiveDummy.Ur(UnionRecursiveDummy.Bl(true)))
+  val ur2: Option[UnionRecursiveDummy.Ur] = Some(UnionRecursiveDummy.Ur(UnionRecursiveDummy.Ur(UnionRecursiveDummy.Bl(true))))
 
-  val instanceComplex = ComplexDummy(
+  val instanceComplex: ComplexDummy = ComplexDummy(
     bdList = Some(List(instanceBasic, instanceBasic2)),
     bdSet = Some(Set(instanceBasic, instanceBasic2)),
     strToBdMap = Some(Map("a" -> instanceBasic, "b" -> instanceBasic2 )),
     bdToStrMap = Some(Map(instanceBasic -> "a", instanceBasic2 -> "b")),
     unionDummy = Some(UnionDummy.Dbl(2.0)),
-    unionRecursiveDummy = ur0
+    unionRecursiveDummy = ur2
   )
 
   private def checkFor[T <: ThriftStruct with Product: ClassTag: ru.TypeTag](clazz: Class[T], instance: T): Assertion ={
@@ -65,11 +65,10 @@ class Simple extends AnyWordSpecLike with SparkSessionTestSuite with Matchers {
     val df = spark.createDataFrame(rdd, schema)
 
     // DECODE
-    implicit val unionBuilders = UnionBuilders.create(clazz)
+    implicit val unionBuilders: UnionBuilders = UnionBuilders.create(clazz)
     val decoded = RowScroogeConverter.convert(clazz,df.head())
     decoded mustEqual instance
   }
-
 
   "Scrooge - Basic encode/decode functionality" should {
     "encode/decode Basic Scrooge class to Spark Rows" in {

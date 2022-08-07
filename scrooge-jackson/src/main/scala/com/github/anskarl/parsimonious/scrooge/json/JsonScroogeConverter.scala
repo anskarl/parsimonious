@@ -110,7 +110,7 @@ object JsonScroogeConverter {
             }.toMap
           }
 
-        Option(value)
+        fieldInfo.convert(value)
 
       case TType.LIST =>
         val seq = elm.asInstanceOf[node.ArrayNode]

@@ -4,7 +4,7 @@ import com.github.anskarl.parsimonious.scrooge.{ByteArrayEncoder, Constants, Scr
 import com.twitter.scrooge.{ThriftEnum, ThriftStruct, ThriftStructCodec, ThriftStructFieldInfo, ThriftUnion}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
-import org.apache.thrift.protocol.{TCompactProtocol, TType}
+import org.apache.thrift.protocol.TType
 import java.nio.ByteBuffer
 import scala.reflect.ClassTag
 
@@ -93,7 +93,7 @@ object ScroogeRowConverter extends ScroogeRowConverterSchema {
     val elms = fieldInfos.zipWithIndex.map{ entry =>
       val (fieldInfo: ThriftStructFieldInfo, index: Int) = entry
       val elm = instance.productElement(index)
-      convertJavaElmToRowElm(elm, fieldInfo,  codec)
+      convertElmToRowElm(elm, fieldInfo,  codec)
     }
 
     Row.fromSeq(elms)
@@ -107,7 +107,7 @@ object ScroogeRowConverter extends ScroogeRowConverterSchema {
       val name = info.tfield.name
 
       if(name == instanceFieldName)
-        convertJavaElmToRowElm(instance.containedValue(), info, codec)
+        convertElmToRowElm(instance.containedValue(), info, codec)
       else null
     }
     Row.fromSeq(elms)
@@ -116,17 +116,17 @@ object ScroogeRowConverter extends ScroogeRowConverterSchema {
   private def decodeSingle[T](elm: Any, fieldInfo: ThriftStructFieldInfo): Option[T] =
     if(fieldInfo.isOptional) elm.asInstanceOf[Option[T]] else Option(elm.asInstanceOf[T])
 
-  private def convertJavaElmSeqToRowElmSeq(seq: Seq[Any], fieldInfo: ThriftStructFieldInfo, codec: ThriftStructCodec[ThriftStruct]): Seq[Any] =
-    seq.map(Option(_)).map(_.map(convertJavaElmToRowElm(_, fieldInfo, codec)).orNull)
+  private def convertElmSeqToRowElmSeq(seq: Seq[Any], fieldInfo: ThriftStructFieldInfo, codec: ThriftStructCodec[ThriftStruct]): Seq[Any] =
+    seq.map(Option(_)).map(_.map(convertElmToRowElm(_, fieldInfo, codec)).orNull)
 
   def extractIterElements(elm: Any, isOptional: Boolean, fieldInfo: ThriftStructFieldInfo, codec: ThriftStructCodec[ThriftStruct]): Option[Iterable[Any]] = {
     if (isOptional)
-      elm.asInstanceOf[Option[Iterable[Any]]].map(_.map(e => convertJavaElmToRowElm(e, fieldInfo, codec)))
+      elm.asInstanceOf[Option[Iterable[Any]]].map(_.map(e => convertElmToRowElm(e, fieldInfo, codec)))
     else
-      Option(elm.asInstanceOf[Iterable[Any]].map(e => convertJavaElmToRowElm(e, fieldInfo, codec)))
+      Option(elm.asInstanceOf[Iterable[Any]].map(e => convertElmToRowElm(e, fieldInfo, codec)))
   }
 
-  def convertJavaElmToRowElm(elm: Any, fieldInfo: ThriftStructFieldInfo, codec: ThriftStructCodec[ThriftStruct]): Any ={
+  def convertElmToRowElm(elm: Any, fieldInfo: ThriftStructFieldInfo, codec: ThriftStructCodec[ThriftStruct]): Any ={
     fieldInfo.tfield.`type` match {
       // Recursive Cases
       case TType.LIST | TType.SET=>
@@ -145,8 +145,8 @@ object ScroogeRowConverter extends ScroogeRowConverterSchema {
 
         val mapOpt = if(fieldInfo.isOptional) elm.asInstanceOf[Option[Map[Any, Any]]] else Option(elm.asInstanceOf[Map[Any, Any]])
         mapOpt.map{ map =>
-          val keys: Seq[Any] = convertJavaElmSeqToRowElmSeq(map.keys.toSeq, keyThriftStructFieldInfo, codec)
-          val vals: Seq[Any] = convertJavaElmSeqToRowElmSeq(map.values.toSeq, valueThriftStructFieldInfo, codec)
+          val keys: Seq[Any] = convertElmSeqToRowElmSeq(map.keys.toSeq, keyThriftStructFieldInfo, codec)
+          val vals: Seq[Any] = convertElmSeqToRowElmSeq(map.values.toSeq, valueThriftStructFieldInfo, codec)
           val keyVals = keys.zip(vals)
 
           // If the key is not primitive, we convert the map to a list of key/value struct

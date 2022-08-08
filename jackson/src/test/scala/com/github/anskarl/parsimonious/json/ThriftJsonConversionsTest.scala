@@ -1,7 +1,7 @@
 package com.github.anskarl.parsimonious.json
 
 import com.github.anskarl.parsimonious.pojo.models._
-import com.github.anskarl.parsimonious.DummyGenerators
+import com.github.anskarl.parsimonious.DummyThriftGenerators
 import org.scalacheck.Prop.forAll
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.matchers.must.Matchers
@@ -12,7 +12,7 @@ import org.apache.thrift.TBase
 
 import scala.util.chaining._
 
-class ThriftJsonConversionsTest extends AnyWordSpecLike with Matchers with Checkers with DummyGenerators {
+class ThriftJsonConversionsTest extends AnyWordSpecLike with Matchers with Checkers with DummyThriftGenerators {
 
   "Json <> Thrift converters" should {
     "encode/decode Thrift generated classes to Json" in {

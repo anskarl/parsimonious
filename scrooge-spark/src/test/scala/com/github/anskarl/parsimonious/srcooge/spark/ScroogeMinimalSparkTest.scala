@@ -13,45 +13,44 @@ import scala.reflect.runtime.{universe => ru}
 import java.nio.ByteBuffer
 import scala.reflect.ClassTag
 
-class Simple extends AnyWordSpecLike with SparkSessionTestSuite with Matchers {
+class ScroogeMinimalSparkTest extends AnyWordSpecLike with SparkSessionTestSuite with Matchers {
 
 
   val instanceBasic: BasicDummy = BasicDummy(
     reqStr = "required string",
-    str = Option("foo"),
+    str = Option("optional string"),
     int16 = Option(16.toShort),
     int32 = Option(32),
     int64 = Option(64L),
     dbl = Option(1.1),
     byt = Option(8.toByte),
     bl = Option(true),
-    bin = Option(ByteBuffer.wrap("foo-bar".getBytes("UTF-8"))),
+    bin = Option(ByteBuffer.wrap("string value encoded as binary".getBytes("UTF-8"))),
     listNumbersI32 = Option(Seq(1,2,3,4,5)),
     listNumbersDouble = Option(Seq(1.1, 2.2, 3.3)),
     setNumbersI32 = Option(Set(1,1,2,2,3,3)),
     setNumbersDouble = Option(Set(1.1,1.1,2.2,2.2,3.3,3.3)),
     enm = Option(EnumDummy.Maybe),
-    listStruct = Option(Seq(PropertyValue("p1", "v1"), PropertyValue("p2", "v2"))),
-    mapPrimitives = Option(Map(1->1.1, 2->2.2)),
-    mapStructKey = Option(Map(PropertyValue("p1", "v1") -> 1.1, PropertyValue("p2", "v2") -> 2.2)),
-    mapPrimitivesStr = Option(Map("a"->1.1, "b"->2.2)),
+    listStruct = Option(Seq(PropertyValue("prop1", "val1"), PropertyValue("prop2", "val2"))),
+    mapPrimitives = Option(Map(1 -> 1.1, 2 -> 2.2)),
+    mapStructKey = Option(Map(PropertyValue("prop1", "val1") -> 1.1, PropertyValue("prop2", "val2") -> 2.2)),
+    mapPrimitivesStr = Option(Map("a" -> 1.1, "b" -> 2.2)),
   )
 
-  val instanceBasic2: BasicDummy = instanceBasic.copy(reqStr = "required string 2")
+  val anotherInstanceBasic: BasicDummy = instanceBasic.copy(reqStr = "another required string")
 
-  val instanceNested: NestedDummy = NestedDummy("aaaa", instanceBasic)
+  val instanceNested: NestedDummy = NestedDummy("nested struct", instanceBasic)
 
-//  val ur0 = Some(UnionRecursiveDummy.Bl(true))
-//  val ur1 = Some(UnionRecursiveDummy.Ur(UnionRecursiveDummy.Bl(true)))
-  val ur2: Option[UnionRecursiveDummy.Ur] = Some(UnionRecursiveDummy.Ur(UnionRecursiveDummy.Ur(UnionRecursiveDummy.Bl(true))))
+  val instanceUnionRecursive: UnionRecursiveDummy.Ur =
+    UnionRecursiveDummy.Ur(UnionRecursiveDummy.Ur(UnionRecursiveDummy.Bl(true)))
 
   val instanceComplex: ComplexDummy = ComplexDummy(
-    bdList = Some(List(instanceBasic, instanceBasic2)),
-    bdSet = Some(Set(instanceBasic, instanceBasic2)),
-    strToBdMap = Some(Map("a" -> instanceBasic, "b" -> instanceBasic2 )),
-    bdToStrMap = Some(Map(instanceBasic -> "a", instanceBasic2 -> "b")),
+    bdList = Some(List(instanceBasic, anotherInstanceBasic)),
+    bdSet = Some(Set(instanceBasic, anotherInstanceBasic)),
+    strToBdMap = Some(Map("basic key" -> instanceBasic, "another basic key" -> anotherInstanceBasic )),
+    bdToStrMap = Some(Map(instanceBasic -> "basic value", anotherInstanceBasic -> "another basic value")),
     unionDummy = Some(UnionDummy.Dbl(2.0)),
-    unionRecursiveDummy = ur2
+    unionRecursiveDummy = Some(instanceUnionRecursive)
   )
 
   private def checkFor[T <: ThriftStruct with Product: ClassTag: ru.TypeTag](clazz: Class[T], instance: T): Assertion ={
@@ -66,7 +65,7 @@ class Simple extends AnyWordSpecLike with SparkSessionTestSuite with Matchers {
 
     // DECODE
     implicit val unionBuilders: UnionBuilders = UnionBuilders.create(clazz)
-    val decoded = RowScroogeConverter.convert(clazz,df.head())
+    val decoded = RowScroogeConverter.convert(clazz, df.head())
     decoded mustEqual instance
   }
 

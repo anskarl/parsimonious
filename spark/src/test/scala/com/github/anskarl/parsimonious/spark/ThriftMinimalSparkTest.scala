@@ -11,7 +11,7 @@ import org.scalatest.wordspec.AnyWordSpecLike
 import scala.util.chaining.scalaUtilChainingOps
 import scala.jdk.CollectionConverters._
 
-class MinimalSparkTest extends AnyWordSpecLike with SparkSessionTestSuite with Matchers {
+class ThriftMinimalSparkTest extends AnyWordSpecLike with SparkSessionTestSuite with Matchers {
 
   "Basic encode/decode functionality" should {
     "encode/decode Thrift class to Spark Rows" in {

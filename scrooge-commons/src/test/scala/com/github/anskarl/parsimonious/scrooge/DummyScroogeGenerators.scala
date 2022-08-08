@@ -1,11 +1,11 @@
-package com.github.anskarl.parsimonious
+package com.github.anskarl.parsimonious.scrooge
 
-import com.github.anskarl.parsimonious.pojo.models._
 import org.scalacheck.{Arbitrary, Gen}
-import scala.jdk.CollectionConverters._
-import scala.util.chaining._
+import com.github.anskarl.parsimonious.scrooge.models._
 
-trait DummyGenerators {
+import java.nio.ByteBuffer
+
+trait DummyScroogeGenerators {
   implicit val arbBasicDummy: Arbitrary[BasicDummy] = Arbitrary(
     for {
       reqStr <- Arbitrary.arbitrary[String]
@@ -16,33 +16,33 @@ trait DummyGenerators {
       dbl <- Arbitrary.arbitrary[Double]
       bl <- Arbitrary.arbitrary[Boolean]
       bin <- Arbitrary.arbitrary[Array[Byte]]
-    } yield new BasicDummy().tap{ d =>
-      d.setReqStr(reqStr)
-      d.setStr(str)
-      d.setInt16(i16)
-      d.setInt32(i32)
-      d.setInt64(i64)
-      d.setDbl(dbl)
-      d.setBl(bl)
-      d.setBin(bin)
-    }
+    } yield BasicDummy(
+      reqStr = reqStr,
+      str = Option(str),
+      int16 = Option(i16),
+      int32 = Option(i32),
+      int64 = Option(i64),
+      dbl = Option(dbl),
+      bl = Option(bl),
+      bin = Option(ByteBuffer.wrap(bin))
+    )
   )
 
   implicit val arbUnionDummy: Arbitrary[UnionDummy] = Arbitrary(Gen.lzy(Gen.oneOf(
-    Arbitrary.arbitrary[Double].map(UnionDummy.dbl),
-    Arbitrary.arbitrary[String].map(UnionDummy.str)
+    Arbitrary.arbitrary[Double].map(UnionDummy.Dbl),
+    Arbitrary.arbitrary[String].map(UnionDummy.Str)
   )))
 
   implicit val arbEnumDummy: Arbitrary[EnumDummy] = Arbitrary(
     for {
-      enumVal <- Gen.choose[Int](0, EnumDummy.values().length - 1)
-    } yield EnumDummy.findByValue(enumVal)
+      enumVal <- Gen.choose[Int](0, EnumDummy.list.length - 1)
+    } yield EnumDummy(enumVal)
   )
 
   // Recursive Generator
-  val baseCaseUnionRecursive: Gen[UnionRecursiveDummy] = Arbitrary.arbitrary[Boolean].map(UnionRecursiveDummy.bl)
+  val baseCaseUnionRecursive: Gen[UnionRecursiveDummy] = Arbitrary.arbitrary[Boolean].map(UnionRecursiveDummy.Bl)
   val unionRecursiveGen: Gen[UnionRecursiveDummy] = Gen.lzy(Gen.oneOf(baseCaseUnionRecursive, recurCaseUnionRecursive))
-  val recurCaseUnionRecursive: Gen[UnionRecursiveDummy] = unionRecursiveGen.map(UnionRecursiveDummy.ur)
+  val recurCaseUnionRecursive: Gen[UnionRecursiveDummy] = unionRecursiveGen.map(UnionRecursiveDummy.Ur)
 
   implicit val arbUnionRecursive: Arbitrary[UnionRecursiveDummy] = Arbitrary(unionRecursiveGen)
 
@@ -56,15 +56,14 @@ trait DummyGenerators {
       union <- Arbitrary.arbitrary[UnionDummy]
       unionRecursive <- Arbitrary.arbitrary[UnionRecursiveDummy]
     } yield {
-      val cd = new ComplexDummy()
-      cd.setBdList(bdList.asJava)
-      cd.setBdSet(bdSet.asJava)
-      cd.setStrToBdMap(strToBdMap.asJava)
-      cd.setBdToStrMap(bdToStrMap.asJava)
-      cd.setEnumDummy(enum)
-      cd.setUnionDummy(union)
-      cd.setUnionRecursiveDummy(unionRecursive)
-      cd
+      ComplexDummy(
+        bdList = Option(bdList),
+        bdSet = Option(bdSet),
+        strToBdMap = Option(strToBdMap),
+        bdToStrMap = Option(bdToStrMap),
+        enumDummy = Option(enum),
+        unionDummy = Option(union),
+        unionRecursiveDummy = Option(unionRecursive))
     }
   )
 }

@@ -2,7 +2,6 @@ package com.github.anskarl.parsimonious.scrooge.spark
 
 import com.github.anskarl.parsimonious.scrooge.{ByteArrayThriftDecoder, ScroogeHelpers, ThriftStructWithProduct, UnionBuilders}
 import com.twitter.scrooge.{StructBuilderFactory, ThriftEnumObject, ThriftStruct, ThriftStructCodec, ThriftStructFieldInfo}
-import io.netty.handler.codec.bytes.ByteArrayDecoder
 import org.apache.spark.sql.Row
 import org.apache.thrift.protocol.TType
 

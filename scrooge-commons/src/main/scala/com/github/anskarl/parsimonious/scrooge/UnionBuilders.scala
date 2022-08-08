@@ -6,6 +6,8 @@ import scala.reflect.runtime.{universe => ru}
 import com.twitter.util.reflect.Types._
 import org.apache.thrift.protocol.TType
 
+import scala.annotation.tailrec
+
 case class UnionBuilder[T <: ThriftStruct](
   name: String,
   className: String,
@@ -37,27 +39,52 @@ object UnionBuilders {
     val result =
       if(codec.metaData.unionFields.nonEmpty) UnionBuilders.createBuilders(codec)
       else
-        codec.metaData.fieldInfos.flatMap(extract)
+        codec.metaData.fieldInfos.flatMap(fieldInfo => extract(Seq(fieldInfo)))
     result
   }
 
-  private[scrooge] def extract(fieldInfo: ThriftStructFieldInfo): Seq[Option[UnionBuilder[_ <: ThriftStruct]]] =
-    fieldInfo.tfield.`type` match {
-      case TType.STRUCT =>
-        val valueStructClass = fieldInfo.manifest.runtimeClass.asInstanceOf[ThriftStructWithProduct]
-        UnionBuilders.extractThriftStruct(valueStructClass)
-      case TType.MAP =>
-        val keyManifest = fieldInfo.keyManifest.get
-        val keyThriftStructFieldInfo = ScroogeHelpers.getThriftStructFieldInfo(fieldInfo.tfield.name+"_key", keyManifest)
-        val valueManifest = fieldInfo.valueManifest.get
-        val valueThriftStructFieldInfo = ScroogeHelpers.getThriftStructFieldInfo(fieldInfo.tfield.name+"_value", valueManifest)
-        extract(keyThriftStructFieldInfo) ++ extract(valueThriftStructFieldInfo)
-      case TType.SET | TType.LIST =>
-        val valueManifest = fieldInfo.valueManifest.get
-        val valueThriftStructFieldInfo = ScroogeHelpers.getThriftStructFieldInfo(fieldInfo.tfield.name+"_values", valueManifest)
-        extract(valueThriftStructFieldInfo)
-      case _ => Seq[UnionBuilderOpt](None)
+//  private[scrooge] def extract(fieldInfo: ThriftStructFieldInfo): Seq[Option[UnionBuilder[_ <: ThriftStruct]]] =
+//    fieldInfo.tfield.`type` match {
+//      case TType.STRUCT =>
+//        val valueStructClass = fieldInfo.manifest.runtimeClass.asInstanceOf[ThriftStructWithProduct]
+//        UnionBuilders.extractThriftStruct(valueStructClass)
+//      case TType.MAP =>
+//        val keyManifest = fieldInfo.keyManifest.get
+//        val keyThriftStructFieldInfo = ScroogeHelpers.getThriftStructFieldInfo(fieldInfo.tfield.name+"_key", keyManifest)
+//        val valueManifest = fieldInfo.valueManifest.get
+//        val valueThriftStructFieldInfo = ScroogeHelpers.getThriftStructFieldInfo(fieldInfo.tfield.name+"_value", valueManifest)
+//        extract(keyThriftStructFieldInfo) ++ extract(valueThriftStructFieldInfo)
+//      case TType.SET | TType.LIST =>
+//        val valueManifest = fieldInfo.valueManifest.get
+//        val valueThriftStructFieldInfo = ScroogeHelpers.getThriftStructFieldInfo(fieldInfo.tfield.name+"_values", valueManifest)
+//        extract(valueThriftStructFieldInfo)
+//      case _ => Seq[UnionBuilderOpt](None)
+//    }
+
+  private[scrooge] def extract(fieldInfos: Seq[ThriftStructFieldInfo]): Seq[Option[UnionBuilder[_ <: ThriftStruct]]] = {
+    @tailrec
+    def extractInner(fieldInfo: ThriftStructFieldInfo): Seq[Option[UnionBuilder[_ <: ThriftStruct]]] =
+      fieldInfo.tfield.`type` match {
+        case TType.MAP =>
+          val keyManifest = fieldInfo.keyManifest.get
+          val keyThriftStructFieldInfo = ScroogeHelpers.getThriftStructFieldInfo(fieldInfo.tfield.name+"_key", keyManifest)
+          val valueManifest = fieldInfo.valueManifest.get
+          val valueThriftStructFieldInfo = ScroogeHelpers.getThriftStructFieldInfo(fieldInfo.tfield.name+"_value", valueManifest)
+          extract(Seq(keyThriftStructFieldInfo, valueThriftStructFieldInfo))
+        case TType.STRUCT =>
+          val valueStructClass = fieldInfo.manifest.runtimeClass.asInstanceOf[ThriftStructWithProduct]
+          UnionBuilders.extractThriftStruct(valueStructClass)
+        case TType.SET | TType.LIST =>
+          val valueManifest = fieldInfo.valueManifest.get
+          val valueThriftStructFieldInfo = ScroogeHelpers.getThriftStructFieldInfo(fieldInfo.tfield.name+"_values", valueManifest)
+          extractInner(valueThriftStructFieldInfo)
+        case _ => Seq[UnionBuilderOpt](None)
+      }
+
+    fieldInfos.foldLeft(Seq.empty[Option[UnionBuilder[_ <: ThriftStruct]]]){ (acc, fieldInfo) =>
+      acc ++ extractInner(fieldInfo)
     }
+  }
 
 
 
@@ -75,7 +102,7 @@ object UnionBuilders {
 
         // avoid infinite recursion, when having recursive structs/unions
         if (structClassName != fieldClassName)
-          result ++= extract(unionFieldInfo.structFieldInfo)
+          result ++= extract(Seq(unionFieldInfo.structFieldInfo))
 
         val name = unionFieldInfo.structFieldInfo.tfield.name
         val unionRuntimeClass = unionFieldInfo.fieldClassTag.runtimeClass

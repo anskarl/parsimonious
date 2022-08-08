@@ -1,7 +1,7 @@
 package com.github.anskarl.parsimonious.spark
 
 import com.github.anskarl.parsimonious.pojo.models._
-import com.github.anskarl.parsimonious.DummyGenerators
+import com.github.anskarl.parsimonious.DummyThriftGenerators
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
@@ -13,9 +13,9 @@ import org.scalatestplus.scalacheck.Checkers
 
 import scala.util.chaining._
 
-class ThriftSparkConversionsTest extends AnyWordSpecLike with SparkSessionTestSuite with Matchers with Checkers with DummyGenerators {
+class ThriftSparkConversionsTest extends AnyWordSpecLike with SparkSessionTestSuite with Matchers with Checkers with DummyThriftGenerators {
 
-  "Row <> Thrift converters" should {
+  "Thrift Row <> Thrift converters" should {
     "encode/decode Thrift generated classes to Spark Rows" in {
       val prop = forAll(Gen.nonEmptyListOf(arbComplexDummy.arbitrary)) { inputList =>
 

@@ -86,14 +86,14 @@ object RowScroogeConverter {
 
       // collections
       case TType.LIST =>
-        val seq = elm.asInstanceOf[scala.collection.Seq[Any]]
+        val seq = elm.asInstanceOf[scala.collection.Iterable[Any]].toSeq
         val thriftStructFieldInfo = ScroogeHelpers.getThriftStructFieldInfo(fieldInfo.tfield.name+"_values", fieldInfo.valueManifest.get)
         val values = convertRowElmSeqToScroogeElmSeq(seq,thriftStructFieldInfo, codec)
 
         fieldInfo.convert(values.toList)
 
       case TType.SET =>
-        val seq = elm.asInstanceOf[scala.collection.Seq[Any]]
+        val seq = elm.asInstanceOf[scala.collection.Iterable[Any]].toSeq
         val thriftStructFieldInfo = ScroogeHelpers.getThriftStructFieldInfo(fieldInfo.tfield.name+"_values", fieldInfo.valueManifest.get)
         val values = convertRowElmSeqToScroogeElmSeq(seq,thriftStructFieldInfo, codec)
 

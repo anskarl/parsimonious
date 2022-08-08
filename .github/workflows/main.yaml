@@ -3,12 +3,12 @@ name: build
 on: [push, pull_request]
 
 jobs:
-  build:
+  build_apache_thrift_modules:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        thrift_version: [ '0.10.0', '0.13.0' ]
-    name: Build for Thrift version ${{ matrix.thrift_version }}
+        thrift_version: [ '0.10.0', '0.13.0']
+    name: Build Parsimonious modules for Apache Thrift version ${{ matrix.thrift_version }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -25,20 +25,44 @@ jobs:
             ~/.ivy2/cache
             ~/.sbt
           key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt') }}
-      - name: Build parsimonious-commons (thrift ${{ matrix.thrift_version }})
-        run: THRIFT_VERSION=${{ matrix.thrift_version }} sbt build-commons
-      - name: Build parsimonious-scrooge-commons (thrift ${{ matrix.thrift_version }})
-        run: THRIFT_VERSION=${{ matrix.thrift_version }} sbt build-scrooge-commons
-      - name: Build parsimonious-spark-commons (thrift ${{ matrix.thrift_version }})
+      - name: Build parsimonious-spark-commons (Thrift ${{ matrix.thrift_version }})
         run: THRIFT_VERSION=${{ matrix.thrift_version }} sbt build-spark-commons
-      - name: Build parsimonious-jackson (thrift ${{ matrix.thrift_version }})
+      - name: Build parsimonious-commons (Thrift ${{ matrix.thrift_version }})
+        run: THRIFT_VERSION=${{ matrix.thrift_version }} sbt build-commons
+      - name: Build parsimonious-jackson (Thrift ${{ matrix.thrift_version }})
         run: THRIFT_VERSION=${{ matrix.thrift_version }} sbt build-jackson
-      - name: Build parsimonious-scrooge-jackson (thrift ${{ matrix.thrift_version }})
-        run: THRIFT_VERSION=${{ matrix.thrift_version }} sbt build-scrooge-jackson
-      - name: Build parsimonious-spark (thrift ${{ matrix.thrift_version }}, spark 2.4)
+      - name: Build parsimonious-spark (Thrift ${{ matrix.thrift_version }}, Spark 2.4)
         run: THRIFT_VERSION=${{ matrix.thrift_version }} SPARK_PROFILE=spark2 sbt build-spark
-      - name: Build parsimonious-spark (thrift ${{ matrix.thrift_version }}, spark 3.2)
+      - name: Build parsimonious-spark (Thrift ${{ matrix.thrift_version }}, Spark 3.2)
         run: THRIFT_VERSION=${{ matrix.thrift_version }} SPARK_PROFILE=spark3 sbt build-spark
-
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+  build_scrooge_modules:
+    runs-on: ubuntu-latest
+    name: Build Parsimonious modules for Twitter Scrooge
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+      - name: Cache SBT
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.ivy2/cache
+            ~/.sbt
+          key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt') }}
+      - name: Build parsimonious-scrooge-commons
+        run: THRIFT_VERSION=0.10.0 sbt build-scrooge-commons
+      - name: Build parsimonious-scrooge-jackson
+        run: THRIFT_VERSION=0.10.0 sbt build-scrooge-jackson
+      - name: Build parsimonious-scrooge-spark (Spark 2.4)
+        run: THRIFT_VERSION=0.10.0 SPARK_PROFILE=spark2 sbt build-scrooge-spark
+      - name: Build parsimonious-scrooge-spark (Spark 3.2)
+        run: THRIFT_VERSION=0.10.0 SPARK_PROFILE=spark3 sbt build-scrooge-spark
     env:
       GITHUB_TOKEN: ${{ github.token }}

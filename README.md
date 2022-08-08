@@ -9,10 +9,10 @@ The implementation for Spark is based on https://github.com/airbnb/airbnb-spark-
 Important features:
 
   - Supports all Thrift types, including unions and binary types. 
-  - Supports Twitter Scrooge generated classes.
+  - Supports both Twitter Scrooge and Apache Thrift generated classes.
   - Supports nested and recursive structures. Please note, for Spark, recursive structures are being serialized to bytes.
-  - For Json, when a Thrift map does not have string type as a key (e.g., a struct) then _Parsimonious_ will convert it to a sequence of key, value tuples (the opposite during decoding to Thrift is also supported).
-  - (TODO) Scrooge Thrift and Apache Spark interoperability.
+  - For JSON, when a Thrift map does not have string type as a key (e.g., a struct) then _Parsimonious_ will convert it to a sequence of key, value tuples (the opposite during decoding to Thrift is also supported).
+  
 ## Example usage
 
 More detailed examples can be found in unit tests (including nested and recursive structures).
@@ -244,6 +244,10 @@ To decode from JSON back to Thrift POJO:
 val decoded: BasicDummy = JsonThriftConverter.convert(classOf[BasicDummy], encoded)
 ```
 
+### Scrooge Thrift interoperability with Apache Spark
+
+TODO: add missing docs here
+
 ### Scrooge Thrift interoperability with Jackson for JSON support
 
 Encode/Decode Scrooge generated classes to/from Jackson node:
@@ -356,7 +360,8 @@ Version variants published in `oss.sonatype.org`
  - scala_version: 2.12, 2.13
  - thrift_version: 0.10.0, 0.13.0
  - spark_major_version: 2 (i.e., 2.4.x), 3 (i.e., 3.1.x)
- 
+ - parsimonious_version: e.g., 0.4.0
+
 #### Maven
 
 ***parsimonious-commons***:
@@ -364,7 +369,7 @@ Version variants published in `oss.sonatype.org`
 <dependency>
   <groupId>com.github.anskarl</groupId>
   <artifactId>parsimonious-commons_[scala_version]</artifactId>
-  <version>thrift_[thift_version]-0.3.0</version>
+  <version>thrift_[thift_version]-[parsimonious_version]</version>
 </dependency>
 ```
 
@@ -373,7 +378,7 @@ Version variants published in `oss.sonatype.org`
 <dependency>
   <groupId>com.github.anskarl</groupId>
   <artifactId>parsimonious-jackson_[scala_version]</artifactId>
-  <version>thrift_[thift_version]-0.3.0</version>
+  <version>thrift_[thift_version]-[parsimonious_version]</version>
 </dependency>
 ```
 
@@ -382,7 +387,7 @@ Version variants published in `oss.sonatype.org`
 <dependency>
   <groupId>com.github.anskarl</groupId>
   <artifactId>parsimonious-spark_[scala_version]</artifactId>
-  <version>thrift_[thift_version]_spark[spark_major_version]-0.3.0</version>
+  <version>thrift_[thift_version]_spark_[spark_major_version]-[parsimonious_version]</version>
 </dependency>
 ```
 
@@ -391,7 +396,7 @@ Version variants published in `oss.sonatype.org`
 <dependency>
   <groupId>com.github.anskarl</groupId>
   <artifactId>parsimonious-scrooge-commons_[scala_version]</artifactId>
-  <version>thrift_[thift_version]-0.3.0</version>
+  <version>thrift_[thift_version]-[parsimonious_version]</version>
 </dependency>
 ```
 
@@ -401,10 +406,18 @@ Version variants published in `oss.sonatype.org`
 <dependency>
   <groupId>com.github.anskarl</groupId>
   <artifactId>parsimonious-scrooge-jackson_[scala_version]</artifactId>
-  <version>thrift_[thift_version]-0.3.0</version>
+  <version>thrift_[thift_version]-[parsimonious_version]</version>
 </dependency>
 ```
 
+***parsimonious-scrooge-spark***:
+```
+<dependency>
+  <groupId>com.github.anskarl</groupId>
+  <artifactId>parsimonious-scrooge-spark_[scala_version]</artifactId>
+  <version>thrift_[thrift_version]_spark_[spark_major_version]-[parsimonious_version]</version>
+</dependency>
+```
 
 #### SBT
 
@@ -416,26 +429,79 @@ resolvers += Resolver.sonatypeRepo("public") //  (or “snapshots”, “staging
 
 ***parsimonious-commons***:
 ```
-"com.github.anskarl" %% "parsimonious-commons" % "thrift_[thift_version]-0.3.0"
+"com.github.anskarl" %% "parsimonious-commons" % "thrift_[thrift_version]-[parsimonious_version]"
 ```
 
 ***parsimonious-jackson***:
 ```
-"com.github.anskarl" %% "parsimonious-jackson" % "thrift_[thift_version]-0.3.0"
+"com.github.anskarl" %% "parsimonious-jackson" % "thrift_[thrift_version]-[parsimonious_version]"
 ```
 
 ***parsimonious-spark***:
 ```
-"com.github.anskarl" %% "parsimonious-spark" % "thrift_[thift_version]_spark[spark_major_version]-0.3.0"
+"com.github.anskarl" %% "parsimonious-spark" % "thrift_[thrift_version]_spark_[spark_major_version]-[parsimonious_version]"
 ```
 
 ***parsimonious-scrooge-commons***:
 ```
-"com.github.anskarl" %% "parsimonious-scrooge-commons" % "thrift_[thift_version]-0.3.0"
+"com.github.anskarl" %% "parsimonious-scrooge-commons" % "thrift_[thrift_version]-[parsimonious_version]"
 ```
 
 
 ***parsimonious-scrooge-jackson***:
 ```
-"com.github.anskarl" %% "parsimonious-scrooge-jackson" % "thrift_[thift_version]-0.3.0"
+"com.github.anskarl" %% "parsimonious-scrooge-jackson" % "thrift_[thrift_version]-[parsimonious_version]"
+```
+
+***parsimonious-scrooge-spark***:
+```
+"com.github.anskarl" %% "parsimonious-scrooge-spark" % "thrift_[thrift_version]_spark_[spark_major_version]-[parsimonious_version]"
+```
+
+## Build from sources
+
+To build parsimonious from sources you will need an SBT version 1.6+. The build can be parameterized for the following environment variables:
+  - `THRIFT_VERSION`: e.g., 0.13.0. Default is `0.10.0`. Please note that for Scrooge modules is always version `0.10.0`.
+  - `SPARK_PROFILE`: can be either `spark2` or `spark3` (default is `spark3`).
+    * In `spark2` parsimonious is build for Spark v2.4.6, Hadoop v2.10.0 and Parquet v1.10.1.
+    * In `spark3` parsimonious is build for Spark v3.2.0, Hadoop v3.3.1 and Parquet v1.12.2.
+
+For all variants of `THRIFT_VERSION` and `SPARK_PROFILE`, parsimonious can be cross-build for Scala 2.12 and 2.13.
+
+There are several sbt command aliases to build any of the parsimonious modules separately or all together. 
+For a complete list see the `.sbtrc` file. 
+
+##### All modules using default settings
+
+The following command will build all modules, using default version of Thrift (0.10) and Spark (3.2).
+
+```shell
+sbt build-all
+```
+
+##### All modules with custom Thrift and Spark version
+
+The following command will build all modules for Thrift version 0.13.0 and Spark 2 (2.4.x).
+
+```shell
+THRIFT_VERSION=0.13.0 SPARK_PROFILE=spark2 sbt build-all
+```
+
+
+##### Specific module using default settings
+
+The following command will build build-scrooge-jackson module (translates Scrooge classes to/from JSON),
+using default version of Thrift (0.10) and Spark (3.2).
+
+```shell
+sbt build-scrooge-jackson
+```
+
+##### Specific module custom Thrift and Spark version
+
+The following command will build build-spark module (translates Apache Thrift classes to/from Spark Dataframe),
+using Thrift version 0.13 and Spark 2 (2.4.x).
+
+```shell
+THRIFT_VERSION=0.13.0 SPARK_PROFILE=spark2 sbt build-spark
 ```

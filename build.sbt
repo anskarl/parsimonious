@@ -53,6 +53,7 @@ def thriftCmd(majorVersion: String): String = majorVersion match {
   case _ =>
     s"docker run -v ${file(".").getAbsoluteFile.toString}:${file(".").getAbsoluteFile.toString} --workdir ${file(".").getAbsoluteFile.toString} jaegertracing/thrift:${majorVersion} thrift"
 }
+
 def module(name: String): Project =
   Project(s"parsimonious-${name}", file(name))
     .settings(scalaVersion := DefaultScalaVersion)
@@ -72,6 +73,17 @@ def module(name: String): Project =
 
 def module(name: String, versionPrefix: String): Project = module(name).settings(version := s"${versionPrefix}-${version.value}")
 
+/**
+  * Helper module to hold the source code of thrift structures that will be used in unit tests
+  */
+lazy val thriftModels = module("thrift").disablePlugins(ScroogeSBT, ThriftPlugin)
+  .settings(
+    autoScalaLibrary := false,
+    crossPaths := false,
+    packageDoc / publishArtifact := false,
+    packageSrc / publishArtifact := false
+  )
+
 lazy val commons = module("commons", s"thrift_${thriftMajorVersion}")
   .disablePlugins(ScroogeSBT)
   .settings(crossScalaVersions := DefaultCrossScalaVersions)
@@ -81,8 +93,8 @@ lazy val commons = module("commons", s"thrift_${thriftMajorVersion}")
   .settings(libraryDependencies += Dependencies.ScalaCollectionCompat)
   .settings(
     Thrift / thrift := thriftCmd(thriftMajorVersion),
-    Thrift / thriftSourceDir := file("."),
-    Thrift / thriftJavaOptions := Seq(s" -gen java: -I ${(file(".") / "src" / "test"/ "thrift").getPath}"),
+    Thrift / thriftSourceDir := thriftModels.base,
+    Thrift / thriftJavaOptions := Seq(s" -gen java: -I ${thriftModels.base.getPath}"),
     dependencyOverrides += "org.apache.thrift" % "libthrift" % thriftVersion,
     dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-core" % Dependencies.v.Jackson,
     dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-databind" % Dependencies.v.Jackson
@@ -94,7 +106,8 @@ lazy val jackson = module("jackson", s"thrift_${thriftMajorVersion}")
   .settings(libraryDependencies ++= Dependencies.Jackson)
 
 lazy val sparkCommons = module("spark-commons", s"thrift_${thriftMajorVersion}_${sparkProfile}")
-  .dependsOn(commons % "compile->compile;test->test")
+//  .dependsOn(commons % "compile->compile;test->test")
+  .settings(libraryDependencies += Dependencies.UtilBackports)
   .settings(crossScalaVersions := (if(sparkProfile == "spark2") Seq(DefaultScalaVersion) else DefaultCrossScalaVersions  ))
   .settings(resolvers += ("Twitter Maven Repo" at "http://maven.twttr.com").withAllowInsecureProtocol(true))
   .settings(libraryDependencies ++= Dependencies.sparkDependenciesFor(sparkProfile))
@@ -107,7 +120,6 @@ lazy val spark = module("spark", s"thrift_${thriftMajorVersion}_${sparkProfile}"
   .settings(resolvers += ("Twitter Maven Repo" at "http://maven.twttr.com").withAllowInsecureProtocol(true))
   .settings(libraryDependencies ++= Dependencies.sparkDependenciesFor(sparkProfile))
   .settings(libraryDependencies ++= Dependencies.Jackson)
-
 
 lazy val scroogeCommons = module("scrooge-commons")
   .disablePlugins(ThriftPlugin)
@@ -123,6 +135,7 @@ lazy val scroogeCommons = module("scrooge-commons")
     dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-core" % Dependencies.v.Jackson,
     dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-databind" % Dependencies.v.Jackson
   )
+  .settings(Test / scroogeThriftSourceFolder := thriftModels.base)
 
 
 lazy val scroogeJackson = module("scrooge-jackson")
@@ -148,4 +161,4 @@ lazy val root = Project("parsimonious", file("."))
   .settings(scalaVersion := DefaultScalaVersion)
   .settings(Seq(publish := {}, publishLocal := {}, publish / skip := true))
   .settings(commonSettings)
-  .aggregate(commons, sparkCommons, spark, jackson, scroogeCommons, scroogeJackson)
+  .aggregate(sparkCommons, commons, spark, jackson, scroogeCommons, scroogeJackson, scroogeSpark)

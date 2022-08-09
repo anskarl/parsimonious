@@ -65,7 +65,7 @@ val rowRDD: RDD[Row] = spark.sparkContext.parallelize(rowSeq)
 val df: DataFrame = spark.createDataFrame(rowRDD, sparkSchema)
 ```
 
-See the schema and preview the first 20 rows:
+See the schema and preview the first 5 rows:
 
 ```scala
 // Print dataframe schema
@@ -83,7 +83,7 @@ df.printSchema()
 // |-- bl: boolean (nullable = true)
 // |-- bin: binary (nullable = true)
 
-df.show(numRows = 20, truncate = false)
+df.show(numRows = 5, truncate = false)
 // +---------+----+-----+-----+-----+----+----+-----+----+
 // |reqStr   |str |int16|int32|int64|dbl |byt |bl   |bin |
 // +---------+----+-----+-----+-----+----+----+-----+----+
@@ -92,21 +92,6 @@ df.show(numRows = 20, truncate = false)
 // |index: 3 |null|null |3    |null |null|null|false|null|
 // |index: 4 |null|null |4    |null |null|null|false|null|
 // |index: 5 |null|null |5    |null |null|null|false|null|
-// |index: 6 |null|null |6    |null |null|null|false|null|
-// |index: 7 |null|null |7    |null |null|null|false|null|
-// |index: 8 |null|null |8    |null |null|null|false|null|
-// |index: 9 |null|null |9    |null |null|null|false|null|
-// |index: 10|null|null |10   |null |null|null|true |null|
-// |index: 11|null|null |11   |null |null|null|false|null|
-// |index: 12|null|null |12   |null |null|null|false|null|
-// |index: 13|null|null |13   |null |null|null|false|null|
-// |index: 14|null|null |14   |null |null|null|false|null|
-// |index: 15|null|null |15   |null |null|null|false|null|
-// |index: 16|null|null |16   |null |null|null|false|null|
-// |index: 17|null|null |17   |null |null|null|false|null|
-// |index: 18|null|null |18   |null |null|null|false|null|
-// |index: 19|null|null |19   |null |null|null|false|null|
-// |index: 20|null|null |20   |null |null|null|true |null|
 // +---------+----+-----+-----+-----+----+----+-----+----+
 ```
 
@@ -121,29 +106,14 @@ val decodedInputSeq: Seq[BasicDummy] = dfRows
     .map(row => row.as(classOf[BasicDummy])
     .toSeq
 
-// Print the first 20 `BasicDummy`
-decodedInputSeq.take(20).foreach(println)
+// Print the first 5 `BasicDummy`
+decodedInputSeq.take(5).foreach(println)
 
 // BasicDummy(reqStr:index: 1, int32:1, bl:false)
 // BasicDummy(reqStr:index: 2, int32:2, bl:false)
 // BasicDummy(reqStr:index: 3, int32:3, bl:false)
 // BasicDummy(reqStr:index: 4, int32:4, bl:false)
 // BasicDummy(reqStr:index: 5, int32:5, bl:false)
-// BasicDummy(reqStr:index: 6, int32:6, bl:false)
-// BasicDummy(reqStr:index: 7, int32:7, bl:false)
-// BasicDummy(reqStr:index: 8, int32:8, bl:false)
-// BasicDummy(reqStr:index: 9, int32:9, bl:false)
-// BasicDummy(reqStr:index: 10, int32:10, bl:true)
-// BasicDummy(reqStr:index: 11, int32:11, bl:false)
-// BasicDummy(reqStr:index: 12, int32:12, bl:false)
-// BasicDummy(reqStr:index: 13, int32:13, bl:false)
-// BasicDummy(reqStr:index: 14, int32:14, bl:false)
-// BasicDummy(reqStr:index: 15, int32:15, bl:false)
-// BasicDummy(reqStr:index: 16, int32:16, bl:false)
-// BasicDummy(reqStr:index: 17, int32:17, bl:false)
-// BasicDummy(reqStr:index: 18, int32:18, bl:false)
-// BasicDummy(reqStr:index: 19, int32:19, bl:false)
-// BasicDummy(reqStr:index: 20, int32:20, bl:true)
 ```
 
 ### Apache Thrift interoperability with Jackson for JSON support
@@ -246,7 +216,79 @@ val decoded: BasicDummy = JsonThriftConverter.convert(classOf[BasicDummy], encod
 
 ### Scrooge Thrift interoperability with Apache Spark
 
-TODO: add missing docs here
+Create a Spark Dataframe:
+
+```scala
+import org.apache.spark.sql.types.StructType
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{DataFrame, Row}
+import com.github.anskarl.parsimonious.scrooge._
+import com.github.anskarl.parsimonious.scrooge.spark._
+
+// Assume that we have SparkSession initialized as `spark`
+// To extract the schema (i.e., Apache Spark org.apache.spark.sql.types.StructType)
+val sparkSchema: StructType = ScroogeRowConverter.extractSchema(classOf[BasicDummy])
+
+// Need to create once union builders, helper class to extract the schema and 
+// create builder for Scrooge Union (com.twitter.scrooge.ThriftUnion)
+implicit val unionBuilders = UnionBuilders.create(classOf[BasicDummy])
+
+
+// Example collection of BasicDummy instances
+val exampleData = for (index <- 1 to 100) 
+  yield new BasicDummy(reqStr = s"index: ${index}", int32 = index, bl = index % 10 == 0)
+
+// Convert BasicDummy to org.apache.spark.sql.Row
+val rowSeq: Seq[Row] = exampleData.map(_.toRow)
+
+// Create RDD[Row]
+val rowRDD: RDD[Row] = spark.sparkContext.parallelize(rowSeq)
+
+// Create the corresponding dataframe
+val df: DataFrame = spark.createDataFrame(rowRDD, sparkSchema)
+```
+
+See the schema and preview the first 5 rows:
+```scala
+// Print dataframe schema
+df.printSchema()
+
+// Will print:
+// root
+// |-- reqStr: string (nullable = false)
+// |-- str: string (nullable = true)
+// |-- int16: short (nullable = true)
+// |-- int32: integer (nullable = true)
+// |-- int64: long (nullable = true)
+// |-- dbl: double (nullable = true)
+// |-- byt: byte (nullable = true)
+// |-- bl: boolean (nullable = true)
+// |-- bin: binary (nullable = true)
+
+df.show(numRows = 5, truncate = false)
+// +---------+----+-----+-----+-----+----+----+-----+----+
+// |reqStr   |str |int16|int32|int64|dbl |byt |bl   |bin |
+// +---------+----+-----+-----+-----+----+----+-----+----+
+// |index: 1 |null|null |1    |null |null|null|false|null|
+// |index: 2 |null|null |2    |null |null|null|false|null|
+// |index: 3 |null|null |3    |null |null|null|false|null|
+// |index: 4 |null|null |4    |null |null|null|false|null|
+// |index: 5 |null|null |5    |null |null|null|false|null|
+// +---------+----+-----+-----+-----+----+----+-----+----+
+```
+
+Collect the rows and convert back to `BasicDummy`:
+
+
+```scala
+// Collect rows
+val dfRows: Array[Row] = df.collect()
+
+// Convert the collected rows back to BasicDummy instances
+val decodedInputSeq: Seq[BasicDummy] = dfRows
+    .map(row => row.as(classOf[BasicDummy])
+    .toSeq
+```
 
 ### Scrooge Thrift interoperability with Jackson for JSON support
 

@@ -1,6 +1,6 @@
 package com.github.anskarl.parsimonious.scrooge.spark
 
-import com.github.anskarl.parsimonious.scrooge.{ByteArrayThriftEncoder, Constants, ScroogeHelpers}
+import com.github.anskarl.parsimonious.scrooge.{ByteArrayThriftEncoder, ScroogeConfig, ScroogeHelpers}
 import com.twitter.scrooge.{ThriftEnum, ThriftStruct, ThriftStructCodec, ThriftStructFieldInfo, ThriftUnion}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
@@ -10,8 +10,10 @@ import scala.reflect.ClassTag
 
 trait ScroogeRowConverterSchema {
 
-  def extractSchema[T <: ThriftStruct with Product: ClassTag](structClass: Class[T]): StructType ={
-    val codec = com.twitter.scrooge.ThriftStructCodec.forStructClass(structClass)
+  def extractSchema[T <: ThriftStruct with Product: ClassTag](structClass: Class[T])
+    (implicit scroogeConfig: ScroogeConfig = ScroogeConfig()): StructType ={
+
+    val codec = ThriftStructCodec.forStructClass(structClass)
     val fieldInfos: Seq[ThriftStructFieldInfo] = ScroogeHelpers.getFieldInfos(codec)
 
     val fields: Seq[StructField] = fieldInfos
@@ -28,7 +30,7 @@ trait ScroogeRowConverterSchema {
     StructType(fields)
   }
 
-  protected def convertThriftFieldToDataType(fieldInfo: ThriftStructFieldInfo): DataType = {
+  protected def convertThriftFieldToDataType(fieldInfo: ThriftStructFieldInfo)(implicit scroogeConfig: ScroogeConfig): DataType = {
     fieldInfo.tfield.`type` match {
       // Recursive Cases
       case TType.LIST | TType.SET =>
@@ -50,7 +52,7 @@ trait ScroogeRowConverterSchema {
         if (ScroogeHelpers.isPrimitive(keyThriftStructFieldInfo))
           MapType(keyDataType, valueDataType)
         else ArrayType(
-          StructType(Seq(StructField(Constants.keyName, keyDataType), StructField(Constants.valName, valueDataType))),
+          StructType(Seq(StructField(scroogeConfig.keyName, keyDataType), StructField(scroogeConfig.valName, valueDataType))),
           containsNull = false
         )
 
@@ -66,8 +68,7 @@ trait ScroogeRowConverterSchema {
       case TType.I64 => LongType
       case TType.ENUM => StringType
       case TType.STRING =>
-        if(!classOf[String].equals(fieldInfo.manifest.runtimeClass)) BinaryType
-        else StringType
+        if(!classOf[String].equals(fieldInfo.manifest.runtimeClass)) BinaryType else StringType
       case illegalType@_ => throw new IllegalArgumentException(s"Illegal Thrift type: $illegalType")
     }
   }
@@ -75,9 +76,17 @@ trait ScroogeRowConverterSchema {
 
 object ScroogeRowConverter extends ScroogeRowConverterSchema {
 
-  def convert[T <: ThriftStruct with Product](instance: T): Row = {
-    val codec = com.twitter.scrooge.ThriftStructCodec.forStructClass(instance.getClass)
+  def convert[T <: ThriftStruct with Product](instance: T)
+    (implicit scroogeConfig: ScroogeConfig = ScroogeConfig()): Row = {
+
+    val codec = ThriftStructCodec.forStructClass(instance.getClass).asInstanceOf[ThriftStructCodec[T]]
     val fieldInfos: Seq[ThriftStructFieldInfo] = ScroogeHelpers.getFieldInfos(codec)
+
+    convertWithCodec(codec, fieldInfos, instance)
+  }
+
+  def convertWithCodec[T <: ThriftStruct with Product](codec: ThriftStructCodec[T], fieldInfos: Seq[ThriftStructFieldInfo], instance: T)
+    (implicit scroogeConfig: ScroogeConfig = ScroogeConfig()): Row = {
 
     if(codec.metaData.unionFields.isEmpty)
       convertStruct(instance, fieldInfos,  codec.asInstanceOf[ThriftStructCodec[ThriftStruct]])
@@ -85,10 +94,11 @@ object ScroogeRowConverter extends ScroogeRowConverterSchema {
       convertUnion(instance.asInstanceOf[ThriftUnion], fieldInfos, codec.asInstanceOf[ThriftStructCodec[ThriftStruct]])
   }
 
-  def convertStruct[T <: ThriftStruct with Product](
+  private def convertStruct[T <: ThriftStruct with Product](
     instance: T,
     fieldInfos: Seq[ThriftStructFieldInfo],
-    codec: ThriftStructCodec[ThriftStruct]): Row ={
+    codec: ThriftStructCodec[ThriftStruct]
+  )(implicit scroogeConfig: ScroogeConfig): Row ={
 
     val elms = fieldInfos.zipWithIndex.map{ entry =>
       val (fieldInfo: ThriftStructFieldInfo, index: Int) = entry
@@ -99,7 +109,12 @@ object ScroogeRowConverter extends ScroogeRowConverterSchema {
     Row.fromSeq(elms)
   }
 
-  private def convertUnion[T <: ThriftUnion](instance: T, fieldInfos: Seq[ThriftStructFieldInfo],  codec: ThriftStructCodec[ThriftStruct]): Row = {
+  private def convertUnion[T <: ThriftUnion](
+    instance: T,
+    fieldInfos: Seq[ThriftStructFieldInfo],
+    codec: ThriftStructCodec[ThriftStruct]
+  )(implicit scroogeConfig: ScroogeConfig): Row = {
+
     val instanceFieldInfo = instance.unionStructFieldInfo.get
     val instanceFieldName = instanceFieldInfo.tfield.name
 
@@ -113,20 +128,32 @@ object ScroogeRowConverter extends ScroogeRowConverterSchema {
     Row.fromSeq(elms)
   }
 
-  private def decodeSingle[T](elm: Any, fieldInfo: ThriftStructFieldInfo): Option[T] =
+  private def decodeSingle[T](
+    elm: Any,
+    fieldInfo: ThriftStructFieldInfo
+  )(implicit scroogeConfig: ScroogeConfig): Option[T] =
     if(fieldInfo.isOptional) elm.asInstanceOf[Option[T]] else Option(elm.asInstanceOf[T])
 
-  private def convertElmSeqToRowElmSeq(seq: Seq[Any], fieldInfo: ThriftStructFieldInfo, codec: ThriftStructCodec[ThriftStruct]): Seq[Any] =
+  private def convertElmSeqToRowElmSeq(
+    seq: Seq[Any],
+    fieldInfo: ThriftStructFieldInfo,
+    codec: ThriftStructCodec[ThriftStruct]
+  )(implicit scroogeConfig: ScroogeConfig): Seq[Any] =
     seq.map(Option(_)).map(_.map(convertElmToRowElm(_, fieldInfo, codec)).orNull)
 
-  def extractIterElements(elm: Any, isOptional: Boolean, fieldInfo: ThriftStructFieldInfo, codec: ThriftStructCodec[ThriftStruct]): Option[Iterable[Any]] = {
+  private def extractIterElements(
+    elm: Any,
+    isOptional: Boolean,
+    fieldInfo: ThriftStructFieldInfo,
+    codec: ThriftStructCodec[ThriftStruct]
+  )(implicit scroogeConfig: ScroogeConfig): Option[Iterable[Any]] = {
     if (isOptional)
       elm.asInstanceOf[Option[Iterable[Any]]].map(_.map(e => convertElmToRowElm(e, fieldInfo, codec)))
     else
       Option(elm.asInstanceOf[Iterable[Any]].map(e => convertElmToRowElm(e, fieldInfo, codec)))
   }
 
-  def convertElmToRowElm(elm: Any, fieldInfo: ThriftStructFieldInfo, codec: ThriftStructCodec[ThriftStruct]): Any ={
+  private def convertElmToRowElm(elm: Any, fieldInfo: ThriftStructFieldInfo, codec: ThriftStructCodec[ThriftStruct])(implicit scroogeConfig: ScroogeConfig): Any ={
     fieldInfo.tfield.`type` match {
       // Recursive Cases
       case TType.LIST | TType.SET=>

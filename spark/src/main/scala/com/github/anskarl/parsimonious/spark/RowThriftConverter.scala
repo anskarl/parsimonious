@@ -1,10 +1,10 @@
 package com.github.anskarl.parsimonious.spark
 
-import com.github.anskarl.parsimonious.{ClassTBaseType, TBaseType, UnsafeThriftHelpers}
+import com.github.anskarl.parsimonious.{ClassTBaseType, TBaseType, ThriftConfig, UnsafeThriftHelpers}
 import org.apache.spark.sql.Row
 import org.apache.thrift.meta_data._
-import org.apache.thrift.protocol.{TCompactProtocol, TType}
-import org.apache.thrift.{TBase, TDeserializer, TFieldIdEnum}
+import org.apache.thrift.protocol.TType
+import org.apache.thrift.{TBase, TFieldIdEnum}
 
 import java.nio.ByteBuffer
 import scala.collection.JavaConverters._
@@ -12,28 +12,23 @@ import scala.collection.mutable
 
 object RowThriftConverter {
 
-  private val DefaultTCompactProtocolDeserializer = new TDeserializer(new TCompactProtocol.Factory())
-
   /**
     * Converts a Spark SQL [[Row]] to a [[TBaseType]]
     */
   def convert[T <: TBaseType](
     tbaseClass: Class[T],
-    row: Row,
-    thriftDeserializer: TDeserializer = DefaultTCompactProtocolDeserializer
-  ): T =
+    row: Row
+  )(implicit thriftConfig: ThriftConfig = ThriftConfig()): T =
     convertRowToThriftGeneric(
       tbaseClass = tbaseClass.asInstanceOf[ClassTBaseType],
-      row = row,
-      thriftDeserializer = thriftDeserializer
+      row = row
     ).asInstanceOf[T]
 
   private def convertRowToThriftGeneric[F <: TFieldIdEnum](
     tbaseClass: ClassTBaseType,
     row: Row,
-    typeDefClasses: Map[String, ClassTBaseType] = Map.empty,
-    thriftDeserializer: TDeserializer
-  ): TBaseType = {
+    typeDefClasses: Map[String, ClassTBaseType] = Map.empty
+  )(implicit thriftConfig: ThriftConfig): TBaseType = {
 
     val fieldMeta = UnsafeThriftHelpers
       .getStructMetaDataMap(tbaseClass)
@@ -44,7 +39,6 @@ object RowThriftConverter {
     fieldMeta.zipWithIndex.foreach({
       case ((tFieldIdEnum: TFieldIdEnum, metaData: FieldMetaData), i: Int) =>
         if (!row.isNullAt(i)) {
-          // val tFieldIdEnum: TFieldIdEnum = instance.fieldForId(tFieldIdEnum.getThriftFieldId.toInt)
           val field: F = tFieldIdEnum.asInstanceOf[F]
           val typeDefName: String = metaData.valueMetaData.getTypedefName
 
@@ -52,8 +46,7 @@ object RowThriftConverter {
             convertRowElmToJavaElm(
               elm = row(i),
               meta = metaData.valueMetaData,
-              typeDefClses = typeDefClasses + (typeDefName -> tbaseClass),
-              thriftDeserializer = thriftDeserializer
+              typeDefClasses = typeDefClasses + (typeDefName -> tbaseClass)
             ).asInstanceOf[Object]
 
           instance.setFieldValue(field, datum) //todo
@@ -67,10 +60,9 @@ object RowThriftConverter {
   private def convertRowElmSeqToJavaElmSeq(
     seq: Seq[Any],
     innerElmMeta: FieldValueMetaData,
-    typeDefClasses: Map[String, ClassTBaseType],
-    thriftDeserializer: TDeserializer
-  ): Seq[Any] =
-    seq.map(Option(_)).map(_.map(convertRowElmToJavaElm(_, innerElmMeta, typeDefClasses, thriftDeserializer)).orNull)
+    typeDefClasses: Map[String, ClassTBaseType]
+  )(implicit thriftConfig: ThriftConfig): Seq[Any] =
+    seq.map(Option(_)).map(_.map(convertRowElmToJavaElm(_, innerElmMeta, typeDefClasses)).orNull)
 
   /**
     * Converts a [[Row]] element to a Java element
@@ -78,9 +70,8 @@ object RowThriftConverter {
   private def convertRowElmToJavaElm(
     elm: Any,
     meta: FieldValueMetaData,
-    typeDefClses: Map[String, ClassTBaseType],
-    thriftDeserializer: TDeserializer
-  ): Any = {
+    typeDefClasses: Map[String, ClassTBaseType]
+  )(implicit thriftConfig: ThriftConfig): Any = {
 
     if (meta.isBinary) ByteBuffer.wrap(elm.asInstanceOf[Array[Byte]]) else meta.`type` match {
       // Recursive Cases
@@ -90,13 +81,12 @@ object RowThriftConverter {
           convertRowToThriftGeneric(
             tbaseClass = structSafeClass,
             row = elm.asInstanceOf[Row],
-            typeDefClasses = typeDefClses,
-            thriftDeserializer = thriftDeserializer
+            typeDefClasses = typeDefClasses
           )
         // This case implies recursion
         case _ =>
-          val recursiveInstance = typeDefClses(meta.getTypedefName).getConstructor().newInstance()
-          thriftDeserializer.deserialize(recursiveInstance.asInstanceOf[TBase[_, _]], elm.asInstanceOf[Array[Byte]])
+          val recursiveInstance = typeDefClasses(meta.getTypedefName).getConstructor().newInstance()
+          thriftConfig.protocolDeserializer.deserialize(recursiveInstance.asInstanceOf[TBase[_, _]], elm.asInstanceOf[Array[Byte]])
           recursiveInstance
       }
 
@@ -114,8 +104,8 @@ object RowThriftConverter {
         }
 
         val keyVals =
-          convertRowElmSeqToJavaElmSeq(keys.toSeq, mapMeta.keyMetaData, typeDefClses, thriftDeserializer)
-            .zip(convertRowElmSeqToJavaElmSeq(vals.toSeq, mapMeta.valueMetaData, typeDefClses, thriftDeserializer))
+          convertRowElmSeqToJavaElmSeq(keys.toSeq, mapMeta.keyMetaData, typeDefClasses)
+            .zip(convertRowElmSeqToJavaElmSeq(vals.toSeq, mapMeta.valueMetaData, typeDefClasses))
 
         Map(keyVals: _*).asJava
 
@@ -127,8 +117,7 @@ object RowThriftConverter {
         convertRowElmSeqToJavaElmSeq(
           arr.toSeq,
           listMeta.elemMetaData,
-          typeDefClses,
-          thriftDeserializer
+          typeDefClasses
         ).toList.asJava
 
       case TType.SET =>
@@ -141,8 +130,7 @@ object RowThriftConverter {
         convertRowElmSeqToJavaElmSeq(
           arr.toSeq,
           setMeta.elemMetaData,
-          typeDefClses,
-          thriftDeserializer
+          typeDefClasses
         ).toSet.asJava
 
       // Base Cases

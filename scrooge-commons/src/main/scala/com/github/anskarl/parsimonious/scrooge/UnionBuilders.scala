@@ -43,24 +43,6 @@ object UnionBuilders {
     result
   }
 
-//  private[scrooge] def extract(fieldInfo: ThriftStructFieldInfo): Seq[Option[UnionBuilder[_ <: ThriftStruct]]] =
-//    fieldInfo.tfield.`type` match {
-//      case TType.STRUCT =>
-//        val valueStructClass = fieldInfo.manifest.runtimeClass.asInstanceOf[ThriftStructWithProduct]
-//        UnionBuilders.extractThriftStruct(valueStructClass)
-//      case TType.MAP =>
-//        val keyManifest = fieldInfo.keyManifest.get
-//        val keyThriftStructFieldInfo = ScroogeHelpers.getThriftStructFieldInfo(fieldInfo.tfield.name+"_key", keyManifest)
-//        val valueManifest = fieldInfo.valueManifest.get
-//        val valueThriftStructFieldInfo = ScroogeHelpers.getThriftStructFieldInfo(fieldInfo.tfield.name+"_value", valueManifest)
-//        extract(keyThriftStructFieldInfo) ++ extract(valueThriftStructFieldInfo)
-//      case TType.SET | TType.LIST =>
-//        val valueManifest = fieldInfo.valueManifest.get
-//        val valueThriftStructFieldInfo = ScroogeHelpers.getThriftStructFieldInfo(fieldInfo.tfield.name+"_values", valueManifest)
-//        extract(valueThriftStructFieldInfo)
-//      case _ => Seq[UnionBuilderOpt](None)
-//    }
-
   private[scrooge] def extract(fieldInfos: Seq[ThriftStructFieldInfo]): Seq[Option[UnionBuilder[_ <: ThriftStruct]]] = {
     @tailrec
     def extractInner(fieldInfo: ThriftStructFieldInfo): Seq[Option[UnionBuilder[_ <: ThriftStruct]]] =

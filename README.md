@@ -399,10 +399,10 @@ val decoded: BasicDummy = JsonScroogeConverter.convert(classOf[BasicDummy], enco
 ## Dependencies
 
 Version variants published in `oss.sonatype.org`
- - scala_version: 2.12, 2.13
- - thrift_version: 0.10.0, 0.13.0
- - spark_major_version: 2 (i.e., 2.4.x), 3 (i.e., 3.1.x)
- - parsimonious_version: e.g., 0.4.0
+ - scala_version: `2.12`, `2.13`
+ - thrift_version: `thrift_0.10`, `thrift_0.13`
+ - spark_version: `spark2` (i.e., 2.4.x), `spark3` (i.e., 3.1.x)
+ - parsimonious_version: e.g., `0.4.0`
 
 #### Maven
 
@@ -411,7 +411,7 @@ Version variants published in `oss.sonatype.org`
 <dependency>
   <groupId>com.github.anskarl</groupId>
   <artifactId>parsimonious-commons_[scala_version]</artifactId>
-  <version>thrift_[thift_version]-[parsimonious_version]</version>
+  <version>[thrift_version]-[parsimonious_version]</version>
 </dependency>
 ```
 
@@ -420,7 +420,7 @@ Version variants published in `oss.sonatype.org`
 <dependency>
   <groupId>com.github.anskarl</groupId>
   <artifactId>parsimonious-jackson_[scala_version]</artifactId>
-  <version>thrift_[thift_version]-[parsimonious_version]</version>
+  <version>[thrift_version]-[parsimonious_version]</version>
 </dependency>
 ```
 
@@ -429,7 +429,7 @@ Version variants published in `oss.sonatype.org`
 <dependency>
   <groupId>com.github.anskarl</groupId>
   <artifactId>parsimonious-spark_[scala_version]</artifactId>
-  <version>thrift_[thift_version]_spark_[spark_major_version]-[parsimonious_version]</version>
+  <version>[thrift_version]_[spark_version]-[parsimonious_version]</version>
 </dependency>
 ```
 
@@ -438,7 +438,7 @@ Version variants published in `oss.sonatype.org`
 <dependency>
   <groupId>com.github.anskarl</groupId>
   <artifactId>parsimonious-scrooge-commons_[scala_version]</artifactId>
-  <version>thrift_[thift_version]-[parsimonious_version]</version>
+  <version>[thrift_version]-[parsimonious_version]</version>
 </dependency>
 ```
 
@@ -448,7 +448,7 @@ Version variants published in `oss.sonatype.org`
 <dependency>
   <groupId>com.github.anskarl</groupId>
   <artifactId>parsimonious-scrooge-jackson_[scala_version]</artifactId>
-  <version>thrift_[thift_version]-[parsimonious_version]</version>
+  <version>[thrift_version]-[parsimonious_version]</version>
 </dependency>
 ```
 
@@ -457,7 +457,7 @@ Version variants published in `oss.sonatype.org`
 <dependency>
   <groupId>com.github.anskarl</groupId>
   <artifactId>parsimonious-scrooge-spark_[scala_version]</artifactId>
-  <version>thrift_[thrift_version]_spark_[spark_major_version]-[parsimonious_version]</version>
+  <version>[thrift_version]_[spark_major_version]-[parsimonious_version]</version>
 </dependency>
 ```
 
@@ -471,33 +471,33 @@ resolvers += Resolver.sonatypeRepo("public") //  (or “snapshots”, “staging
 
 ***parsimonious-commons***:
 ```
-"com.github.anskarl" %% "parsimonious-commons" % "thrift_[thrift_version]-[parsimonious_version]"
+"com.github.anskarl" %% "parsimonious-commons" % "[thrift_version]-[parsimonious_version]"
 ```
 
 ***parsimonious-jackson***:
 ```
-"com.github.anskarl" %% "parsimonious-jackson" % "thrift_[thrift_version]-[parsimonious_version]"
+"com.github.anskarl" %% "parsimonious-jackson" % "[thrift_version]-[parsimonious_version]"
 ```
 
 ***parsimonious-spark***:
 ```
-"com.github.anskarl" %% "parsimonious-spark" % "thrift_[thrift_version]_spark_[spark_major_version]-[parsimonious_version]"
+"com.github.anskarl" %% "parsimonious-spark" % "[thrift_version]_[spark_version]-[parsimonious_version]"
 ```
 
 ***parsimonious-scrooge-commons***:
 ```
-"com.github.anskarl" %% "parsimonious-scrooge-commons" % "thrift_[thrift_version]-[parsimonious_version]"
+"com.github.anskarl" %% "parsimonious-scrooge-commons" % "[thrift_version]-[parsimonious_version]"
 ```
 
 
 ***parsimonious-scrooge-jackson***:
 ```
-"com.github.anskarl" %% "parsimonious-scrooge-jackson" % "thrift_[thrift_version]-[parsimonious_version]"
+"com.github.anskarl" %% "parsimonious-scrooge-jackson" % "[thrift_version]-[parsimonious_version]"
 ```
 
 ***parsimonious-scrooge-spark***:
 ```
-"com.github.anskarl" %% "parsimonious-scrooge-spark" % "thrift_[thrift_version]_spark_[spark_major_version]-[parsimonious_version]"
+"com.github.anskarl" %% "parsimonious-scrooge-spark" % "[thrift_version]_[spark_version]-[parsimonious_version]"
 ```
 
 ## Build from sources

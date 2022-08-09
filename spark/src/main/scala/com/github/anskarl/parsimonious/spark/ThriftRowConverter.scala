@@ -13,19 +13,13 @@ import scala.collection.JavaConverters._
 
 object ThriftRowConverter {
 
-  private val keyName = "key"
-  private val valName = "value"
-
-  //  private val thriftSerializer = new TSerializer(new TCompactProtocol.Factory())
-  private val DefaultTCompactProtocolSerializer = new TSerializer(new TCompactProtocol.Factory())
-
   /**
     * Converts a [[TBaseType]] to a Spark SQL [[Row]]
     */
   def convert[F <: TFieldIdEnum : ClassTag](
-    instance: TBase[_ <: TBase[_, _], F],
-    thriftSerializer: TSerializer = DefaultTCompactProtocolSerializer
-  ): Row = {
+    instance: TBase[_ <: TBase[_, _], F]
+  )(implicit thriftConfig: ThriftConfig = ThriftConfig()): Row = {
+
     val fieldMeta = FieldMetaData
       .getStructMetaDataMap(instance.getClass.asInstanceOf[Class[_ <: TBase[_, _]]])
       .asScala
@@ -37,7 +31,7 @@ object ThriftRowConverter {
           val field: F = instance.fieldForId(tFieldIdEnum.getThriftFieldId).asInstanceOf[F]
 
           if (instance.isSet(field))
-            convertJavaElmToRowElm(instance.getFieldValue(field), metaData.valueMetaData, thriftSerializer)
+            convertJavaElmToRowElm(instance.getFieldValue(field), metaData.valueMetaData)
           else null
 
       }
@@ -49,7 +43,7 @@ object ThriftRowConverter {
   /**
     * Extracts schema (i.e., Spark SQL [[StructType]]) from a class of [[TBaseType]]
     */
-  def extractSchema(tbaseClass: ClassTBaseType): StructType = {
+  def extractSchema(tbaseClass: ClassTBaseType)(implicit thriftConfig: ThriftConfig = ThriftConfig()): StructType = {
 
     val fieldMeta = FieldMetaData
       .getStructMetaDataMap(tbaseClass.asInstanceOf[Class[_ <: TBase[_, _]]])
@@ -73,7 +67,8 @@ object ThriftRowConverter {
   /**
     * Converts a Java element to a [[Row]] element
     */
-  private def convertJavaElmToRowElm(elm: Any, elmMeta: FieldValueMetaData, thriftSerializer: TSerializer): Any = {
+  private def convertJavaElmToRowElm(elm: Any, elmMeta: FieldValueMetaData)
+    (implicit thriftConfig: ThriftConfig): Any = {
     if (elmMeta.isBinary) elm match {
       case elmByteArray: Array[Byte] => elmByteArray
       case elmByteBuffer: ByteBuffer => elmByteBuffer.array()
@@ -84,20 +79,20 @@ object ThriftRowConverter {
         val seq = elm.asInstanceOf[java.util.List[Any]].asScala
         val innerElmMeta = elmMeta.asInstanceOf[ListMetaData].elemMetaData
 
-        convertJavaElmSeqToRowElmSeq(seq.toSeq, innerElmMeta, thriftSerializer)
+        convertJavaElmSeqToRowElmSeq(seq.toSeq, innerElmMeta)
 
       case TType.SET =>
         val seq = elm.asInstanceOf[java.util.Set[Any]].asScala.toSeq
         val innerElmMeta = elmMeta.asInstanceOf[SetMetaData].elemMetaData
 
-        convertJavaElmSeqToRowElmSeq(seq, innerElmMeta, thriftSerializer)
+        convertJavaElmSeqToRowElmSeq(seq, innerElmMeta)
 
       case TType.MAP =>
         val map = elm.asInstanceOf[java.util.Map[Any, Any]].asScala
         val mapMeta = elmMeta.asInstanceOf[MapMetaData]
 
-        val keys: Seq[Any] = convertJavaElmSeqToRowElmSeq(map.keys.toSeq, mapMeta.keyMetaData, thriftSerializer)
-        val vals: Seq[Any] = convertJavaElmSeqToRowElmSeq(map.values.toSeq, mapMeta.valueMetaData, thriftSerializer)
+        val keys: Seq[Any] = convertJavaElmSeqToRowElmSeq(map.keys.toSeq, mapMeta.keyMetaData)
+        val vals: Seq[Any] = convertJavaElmSeqToRowElmSeq(map.values.toSeq, mapMeta.valueMetaData)
         val keyVals = keys.zip(vals)
 
         // If the key is not primitive, we convert the map to a list of key/value struct
@@ -106,7 +101,7 @@ object ThriftRowConverter {
       case TType.STRUCT => elmMeta match {
         case _: StructMetaData => convert(elm.asInstanceOf[TBaseType])
         // If we've recursed on a struct, thrift returns a TType.Struct with non StructMetaData. We serialize to bytes
-        case _ => thriftSerializer.serialize(elm.asInstanceOf[TBase[_, _]])
+        case _ => thriftConfig.protocolSerializer.serialize(elm.asInstanceOf[TBase[_, _]])
       }
       // Base Cases
       case TType.ENUM => elm.toString
@@ -125,7 +120,7 @@ object ThriftRowConverter {
   /**
     * Converts a Thrift field to a Spark SQL [[DataType]].
     */
-  private def convertThriftFieldToDataType(meta: FieldValueMetaData): DataType = {
+  private def convertThriftFieldToDataType(meta: FieldValueMetaData)(implicit thriftConfig: ThriftConfig): DataType = {
 
     if (meta.isBinary) BinaryType else meta.`type` match {
       // Recursive Cases
@@ -149,7 +144,7 @@ object ThriftRowConverter {
         if (isPrimitive(mapMetaData.keyMetaData))
           MapType(keyDataType, valueDataType)
         else ArrayType(
-          StructType(Seq(StructField(keyName, keyDataType), StructField(valName, valueDataType))),
+          StructType(Seq(StructField(thriftConfig.keyName, keyDataType), StructField(thriftConfig.valName, valueDataType))),
           containsNull = false
         )
 
@@ -175,7 +170,10 @@ object ThriftRowConverter {
   private def isPrimitive(meta: FieldValueMetaData): Boolean = !(meta.isContainer || meta.isStruct)
 
   @inline
-  private def convertJavaElmSeqToRowElmSeq(seq: Seq[Any], innerElmMeta: FieldValueMetaData, thriftSerializer: TSerializer): Seq[Any] =
-    seq.map(Option(_)).map(_.map(convertJavaElmToRowElm(_, innerElmMeta, thriftSerializer)).orNull)
+  private def convertJavaElmSeqToRowElmSeq(
+    seq: Seq[Any],
+    innerElmMeta: FieldValueMetaData
+  )(implicit thriftConfig: ThriftConfig): Seq[Any] =
+    seq.map(Option(_)).map(_.map(convertJavaElmToRowElm(_, innerElmMeta)).orNull)
 
 }

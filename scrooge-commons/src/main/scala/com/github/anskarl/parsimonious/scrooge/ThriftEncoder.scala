@@ -10,48 +10,45 @@ trait ThriftEncoder {
   type Output
   type Transport <: TTransport
 
-  def createTransport[T <: ThriftStruct](obj: T, sizeHint: Int): Transport
+  def createTransport[T <: ThriftStruct](obj: T, sizeHint: Int)(implicit scroogeConfig: ScroogeConfig): Transport
 
-  def createProtocol[T <: ThriftStruct](obj: T, transport: Transport): TProtocol
+  def createProtocol[T <: ThriftStruct](obj: T, transport: Transport)(implicit scroogeConfig: ScroogeConfig): TProtocol
 
-  def getOutput(transport: Transport): Output
+  def getOutput(transport: Transport)(implicit scroogeConfig: ScroogeConfig): Output
 
-  final def createTransport[T <: ThriftStruct](obj: T): Transport = createTransport(obj, Constants.DefaultSizeHint)
+  final def createTransport[T <: ThriftStruct](obj: T)(implicit scroogeConfig: ScroogeConfig): Transport =
+    createTransport(obj, scroogeConfig.sizeHint)
 
-  final def apply[T <: ThriftStruct](obj: T, sizeHint: Int): Output = {
-
-    val transport = createTransport(obj, sizeHint)
+  final def apply[T <: ThriftStruct](obj: T)(implicit scroogeConfig: ScroogeConfig): Output = {
+    val transport = createTransport(obj, scroogeConfig.sizeHint)
     val protocol = createProtocol(obj, transport)
     obj.write(protocol)
     getOutput(transport)
-
   }
-
-  final def apply[T <: ThriftStruct](obj: T): Output = apply(obj, Constants.DefaultSizeHint)
 }
 
 object ByteArrayThriftEncoder extends ThriftEncoder {
   type Output = Array[Byte]
   type Transport = TArrayByteTransport
 
-  def createTransport[T <: ThriftStruct](obj: T, sizeHint: Int): TArrayByteTransport =
-    new TArrayByteTransport(sizeHint)
+  def createTransport[T <: ThriftStruct](obj: T, sizeHint: Int)
+    (implicit scroogeConfig: ScroogeConfig): TArrayByteTransport = new TArrayByteTransport(sizeHint)
 
-  def createProtocol[T <: ThriftStruct](obj: T, transport: TArrayByteTransport): TProtocol =
-    Constants.DefaultProtocolFactory.getProtocol(transport)
+  def createProtocol[T <: ThriftStruct](obj: T, transport: TArrayByteTransport)(implicit scroogeConfig: ScroogeConfig): TProtocol =
+    scroogeConfig.protocolFactory.getProtocol(transport)
 
-  def getOutput(transport: TArrayByteTransport): Array[Byte] = transport.toByteArray
+  def getOutput(transport: TArrayByteTransport)(implicit scroogeConfig: ScroogeConfig): Array[Byte] = transport.toByteArray
 }
 
 object ByteBufferThriftEncoder extends ThriftEncoder {
   type Output = NByteBuffer
   type Transport = TByteBuffer
 
-  def createTransport[T <: ThriftStruct](obj: T, sizeHint: Int): TByteBuffer =
+  def createTransport[T <: ThriftStruct](obj: T, sizeHint: Int)(implicit scroogeConfig: ScroogeConfig): TByteBuffer =
     new TByteBuffer(NByteBuffer.allocate(sizeHint))
 
-  def createProtocol[T <: ThriftStruct](obj: T, transport: TByteBuffer): TProtocol =
-    Constants.DefaultProtocolFactory.getProtocol(transport)
+  def createProtocol[T <: ThriftStruct](obj: T, transport: TByteBuffer)(implicit scroogeConfig: ScroogeConfig): TProtocol =
+    scroogeConfig.protocolFactory.getProtocol(transport)
 
-  def getOutput(transport: TByteBuffer): NByteBuffer = transport.getByteBuffer
+  def getOutput(transport: TByteBuffer)(implicit scroogeConfig: ScroogeConfig): NByteBuffer = transport.getByteBuffer
 }

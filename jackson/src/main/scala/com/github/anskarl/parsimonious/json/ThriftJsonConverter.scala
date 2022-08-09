@@ -2,7 +2,7 @@ package com.github.anskarl.parsimonious.json
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.github.anskarl.parsimonious.TBaseType
+import com.github.anskarl.parsimonious.{TBaseType, ThriftConfig}
 import org.apache.thrift.meta_data._
 import org.apache.thrift.protocol.TType
 import org.apache.thrift.{TBase, TFieldIdEnum, TSerializer}
@@ -19,9 +19,8 @@ object ThriftJsonConverter {
     * Converts a [[TBaseType]] to Jackson [[ObjectNode]]
     */
   def convert[F <: TFieldIdEnum: ClassTag](
-      instance: TBase[_ <: TBase[_, _], F],
-      thriftSerializer: TSerializer = DefaultTCompactProtocolSerializer
-  ): ObjectNode = {
+      instance: TBase[_ <: TBase[_, _], F]
+  )(implicit thriftConfig: ThriftConfig = ThriftConfig()): ObjectNode = {
 
     val fieldMeta = FieldMetaData
       .getStructMetaDataMap(instance.getClass.asInstanceOf[Class[_ <: TBase[_, _]]])
@@ -32,7 +31,7 @@ object ThriftJsonConverter {
         val field: F = instance.fieldForId(tFieldIdEnum.getThriftFieldId)
 
         if (instance.isSet(field)) {
-          val element = convertJavaElmToJSONElm(instance.getFieldValue(field), metaData.valueMetaData, thriftSerializer)
+          val element = convertJavaElmToJSONElm(instance.getFieldValue(field), metaData.valueMetaData)
           val name = field.getFieldName
           node.replace(name, element)
         }
@@ -45,7 +44,8 @@ object ThriftJsonConverter {
   /**
     * Converts a Java element to JSON
     */
-  private def convertJavaElmToJSONElm(elm: Any, elmMeta: FieldValueMetaData, thriftSerializer: TSerializer): JsonNode = {
+  private def convertJavaElmToJSONElm(elm: Any, elmMeta: FieldValueMetaData)
+    (implicit thriftConfig: ThriftConfig): JsonNode = {
     if (elmMeta.isBinary) {
       val bytes = elm match {
         case elmByteArray: Array[Byte] => elmByteArray
@@ -58,22 +58,22 @@ object ThriftJsonConverter {
       case TType.LIST =>
         val seq = elm.asInstanceOf[java.util.List[Any]].asScala
         val innerElmMeta = elmMeta.asInstanceOf[ListMetaData].elemMetaData
-        val elements = convertJavaElmSeqToJsonNodeElmSeq(seq.toSeq, innerElmMeta, thriftSerializer)
+        val elements = convertJavaElmSeqToJsonNodeElmSeq(seq.toSeq, innerElmMeta)
         nodeFactory.arrayNode().addAll(elements.asJava)
 
       case TType.SET =>
         val seq = elm.asInstanceOf[java.util.Set[Any]].asScala.toSeq
         val innerElmMeta = elmMeta.asInstanceOf[SetMetaData].elemMetaData
 
-        val elements = convertJavaElmSeqToJsonNodeElmSeq(seq, innerElmMeta, thriftSerializer)
+        val elements = convertJavaElmSeqToJsonNodeElmSeq(seq, innerElmMeta)
         nodeFactory.arrayNode().addAll(elements.asJava)
 
       case TType.MAP =>
         val map = elm.asInstanceOf[java.util.Map[Any, Any]].asScala
         val mapMeta = elmMeta.asInstanceOf[MapMetaData]
 
-        val keys: Seq[JsonNode] = convertJavaElmSeqToJsonNodeElmSeq(map.keys.toSeq, mapMeta.keyMetaData, thriftSerializer)
-        val vals: Seq[JsonNode] = convertJavaElmSeqToJsonNodeElmSeq(map.values.toSeq, mapMeta.valueMetaData, thriftSerializer)
+        val keys: Seq[JsonNode] = convertJavaElmSeqToJsonNodeElmSeq(map.keys.toSeq, mapMeta.keyMetaData)
+        val vals: Seq[JsonNode] = convertJavaElmSeqToJsonNodeElmSeq(map.values.toSeq, mapMeta.valueMetaData)
         val keyVals = keys.zip(vals)
 
 
@@ -88,8 +88,8 @@ object ThriftJsonConverter {
         else {
           val elements = keyVals.map{case (k,v) =>
             val objNode = nodeFactory.objectNode()
-            objNode.replace(keyName, k)
-            objNode.replace(valName, v)
+            objNode.replace(thriftConfig.keyName, k)
+            objNode.replace(thriftConfig.valName, v)
             objNode
           }
           nodeFactory.arrayNode().addAll(elements.asJava)
@@ -121,7 +121,7 @@ object ThriftJsonConverter {
 
 
   @inline
-  private def convertJavaElmSeqToJsonNodeElmSeq(seq: Seq[Any], innerElmMeta: FieldValueMetaData, thriftSerializer: TSerializer): Seq[JsonNode] =
-    seq.map(Option(_)).map(_.map(convertJavaElmToJSONElm(_, innerElmMeta, thriftSerializer)).orNull)
+  private def convertJavaElmSeqToJsonNodeElmSeq(seq: Seq[Any], innerElmMeta: FieldValueMetaData)(implicit thriftConfig: ThriftConfig): Seq[JsonNode] =
+    seq.map(Option(_)).map(_.map(convertJavaElmToJSONElm(_, innerElmMeta)).orNull)
 
 }

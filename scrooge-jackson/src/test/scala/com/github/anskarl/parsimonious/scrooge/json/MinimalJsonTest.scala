@@ -82,12 +82,14 @@ class MinimalJsonTest extends AnyWordSpecLike with Matchers {
 
 
   private val sampleNestedDummy = NestedDummy(reqStr = "required 101", basic = sampleBasicDummy)
+  private implicit val scroogeConfig: ScroogeConfig = ScroogeConfig()
 
   "Basic encode/decode functionality" should {
     "encode/decode Thrift class to Json" in {
+      implicit val unionBuilders: UnionBuilders = UnionBuilders.create(classOf[NestedDummy])
 
       val encodedJson: ObjectNode = ScroogeJsonConverter.convert(sampleNestedDummy)
-      implicit val unionBuilders = UnionBuilders.create(classOf[NestedDummy])
+
       val decodedNestedDummy: NestedDummy = JsonScroogeConverter.convert(classOf[NestedDummy], encodedJson)
 
       decodedNestedDummy.reqStr mustEqual sampleNestedDummy.reqStr
@@ -110,7 +112,7 @@ class MinimalJsonTest extends AnyWordSpecLike with Matchers {
       decodedNestedDummy.basic.mapPrimitivesStr mustEqual sampleNestedDummy.basic.mapPrimitivesStr
     }
     "decode Json to Thrift" in {
-      implicit val unionBuilders = UnionBuilders.create(classOf[NestedDummy])
+      implicit val unionBuilders: UnionBuilders = UnionBuilders.create(classOf[NestedDummy])
       val decodedNestedDummy = JsonScroogeConverter.convert(classOf[NestedDummy], sampleJsonNode)
 
       decodedNestedDummy.reqStr mustEqual sampleNestedDummy.reqStr

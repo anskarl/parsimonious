@@ -12,19 +12,19 @@ alias build-spark = ;+parsimonious-spark/clean ;parsimonious-spark/test ;+parsim
 
 alias build-scrooge-spark = ;+parsimonious-scrooge-spark/clean ;parsimonious-scrooge-spark/test ;+parsimonious-scrooge-spark/package
 
-alias publish-commons = ;+parsimonious-commons/publish
+alias publish-commons = ;+parsimonious-commons/publishSigned
 
-alias publish-scrooge-commons = ;+parsimonious-scrooge-commons/publish
+alias publish-scrooge-commons = ;+parsimonious-scrooge-commons/publishSigned
 
-alias publish-spark-commons = ;+parsimonious-spark-commons/publish
+alias publish-spark-commons = ;+parsimonious-spark-commons/publishSigned
 
-alias publish-jackson = ;+parsimonious-jackson/publish
+alias publish-jackson = ;+parsimonious-jackson/publishSigned
 
-alias publish-scrooge-jackson = ;+parsimonious-scrooge-jackson/publish
+alias publish-scrooge-jackson = ;+parsimonious-scrooge-jackson/publishSigned
 
-alias publish-spark = ;+parsimonious-spark/publish
+alias publish-spark = ;+parsimonious-spark/publishSigned
 
-alias publish-scrooge-spark = ;+parsimonious-scrooge-spark/publish
+alias publish-scrooge-spark = ;+parsimonious-scrooge-spark/publishSigned
 
 alias publish-local-commons = ;+parsimonious-commons/publishLocal
 

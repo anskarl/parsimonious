@@ -25,7 +25,7 @@ val commonSettings = Seq(
   publishTo := {
     val nexus = "https://oss.sonatype.org/"
     if (isSnapshot.value) Some("snapshots" at nexus + "content/repositories/snapshots")
-    else Some("releases" at nexus + "service/local/staging/deploy/maven2")
+    else Some("releases" at nexus + "content/repositories/releases")
   },
   scmInfo := Some(
     ScmInfo(url("https://github.com/anskarl/parsimonious"), "scm:git:git@github.com:anskarl/parsimonious.git")

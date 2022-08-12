@@ -105,6 +105,10 @@ object Dependencies {
     lazy val Scrooge = Seq(
         "com.twitter" %% "scrooge-core" % v.TwitterLib exclude ("com.twitter", "libthrift"),
         "com.twitter" %% "scrooge-generator" % v.TwitterLib % "provided" exclude ("com.twitter", "libthrift")
-//        "com.twitter" %% "scrooge-serializer" % v.TwitterLib
+    )
+
+    lazy val Flink = Seq(
+        "org.apache.flink" %% "flink-streaming-scala" % "1.13.6",
+        "org.apache.flink" %% "flink-test-utils" % "1.13.6" % Test
     )
 }

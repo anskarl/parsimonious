@@ -3,8 +3,11 @@
 ├─┘├─┤├┬┘└─┐│││││ ││││││ ││ │└─┐
 ┴  ┴ ┴┴└─└─┘┴┴ ┴└─┘┘└┘┴└─┘└─┘└─┘
 ```
-_Parsimonious_ is a helper library for encoding/decoding Apache Thrift classes to Spark Dataframes and Jackson JSON. 
-The implementation for Spark is based on https://github.com/airbnb/airbnb-spark-thrift/tree/nwparker/convV2.
+_Parsimonious_ is a helper library for encoding/decoding Apache Thrift and Twitter Scrooge classes to Spark Dataframes, 
+Jackson JSON and Apache Flink TypeSerializer. 
+
+  - The implementation for Spark is based on [airbnb-spark-thrift](https://github.com/airbnb/airbnb-spark-thrift/tree/nwparker/convV2).
+  - The implementation for Flink support is inspired by [findify flink-protobuf](https://github.com/findify/flink-protobuf).
 
 Important features:
 

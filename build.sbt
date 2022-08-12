@@ -8,6 +8,8 @@ val sparkProfile = sys.env.getOrElse("SPARK_PROFILE", "spark3").toLowerCase()
 val releaseToSonatype = sys.env.getOrElse("RELEASE_SONATYPE", "false").toBoolean
 val DefaultScalaVersion = "2.12.12"
 val DefaultCrossScalaVersions = Seq("2.12.12", "2.13.8")
+val flinkMajorVersion = "1.13"
+
 
 val commonSettings = Seq(
   githubOwner := "anskarl",
@@ -106,7 +108,6 @@ lazy val jackson = module("jackson", s"thrift_${thriftMajorVersion}")
   .settings(libraryDependencies ++= Dependencies.Jackson)
 
 lazy val sparkCommons = module("spark-commons", s"thrift_${thriftMajorVersion}_${sparkProfile}")
-//  .dependsOn(commons % "compile->compile;test->test")
   .settings(libraryDependencies += Dependencies.UtilBackports)
   .settings(crossScalaVersions := (if(sparkProfile == "spark2") Seq(DefaultScalaVersion) else DefaultCrossScalaVersions  ))
   .settings(resolvers += ("Twitter Maven Repo" at "http://maven.twttr.com").withAllowInsecureProtocol(true))
@@ -157,8 +158,33 @@ lazy val scroogeSpark = module("scrooge-spark", s"thrift_${thriftMajorVersion}_$
   .settings(dependencyOverrides += "org.json4s" %% "json4s-scalap" % "3.7.0-M11")
 
 
+lazy val flinkCommons = module("flink-commons", s"thrift_${thriftMajorVersion}_${flinkMajorVersion}")
+  .settings(scalaVersion := DefaultScalaVersion)
+  .settings(crossScalaVersions := Seq.empty)
+  .settings(libraryDependencies += Dependencies.UtilBackports)
+  .settings(libraryDependencies ++= Dependencies.Flink)
+
+
+lazy val flink = module("flink", s"thrift_${thriftMajorVersion}_${flinkMajorVersion}")
+  .dependsOn(commons % "compile->compile;test->test")
+  .dependsOn(flinkCommons % "compile->compile;test->test")
+  .settings(scalaVersion := DefaultScalaVersion)
+  .settings(crossScalaVersions := Seq.empty)
+  .settings(libraryDependencies += Dependencies.UtilBackports)
+  .settings(libraryDependencies ++= Dependencies.Flink)
+
+
+lazy val scroogeFlink = module("scrooge-flink", s"thrift_${thriftMajorVersion}_${flinkMajorVersion}")
+  .dependsOn(scroogeCommons % "compile->compile;test->test")
+  .dependsOn(flinkCommons % "compile->compile;test->test")
+  .settings(scalaVersion := DefaultScalaVersion)
+  .settings(crossScalaVersions := Seq.empty)
+  .settings(libraryDependencies += Dependencies.UtilBackports)
+  .settings(libraryDependencies ++= Dependencies.Flink)
+
+
 lazy val root = Project("parsimonious", file("."))
   .settings(scalaVersion := DefaultScalaVersion)
   .settings(Seq(publish := {}, publishLocal := {}, publish / skip := true))
   .settings(commonSettings)
-  .aggregate(sparkCommons, commons, spark, jackson, scroogeCommons, scroogeJackson, scroogeSpark)
+  .aggregate(sparkCommons, commons, spark, jackson, scroogeCommons, scroogeJackson, scroogeSpark, flinkCommons, flink, scroogeFlink)

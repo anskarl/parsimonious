@@ -74,7 +74,8 @@ case class ThriftTypeSerializer[T <: TBaseType](
     * @return an array of bytes that represent a single thrift serialized record (i.e., struct or union)
     */
   private def getRecordBytes(inputStream: InputStream): Array[Byte] = {
-    val frameSizeBuffer = inputStream.readNBytes(FrameMetaSizeBytes) // todo: compiles only from Java 11+, should replace this for maximum compatibility (e.g., java 8+)
+    val frameSizeBuffer = new Array[Byte](FrameMetaSizeBytes)
+    inputStream.read(frameSizeBuffer,0,FrameMetaSizeBytes)
     val size = TFramedTransport.decodeFrameSize(frameSizeBuffer)
 
     if (size < 0) throw new TTransportException(s"Read a negative frame size ($size)!")

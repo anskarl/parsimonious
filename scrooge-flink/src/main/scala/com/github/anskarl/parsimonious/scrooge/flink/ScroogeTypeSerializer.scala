@@ -62,7 +62,8 @@ case class ScroogeTypeSerializer[T <: ThriftStruct](structClass: Class[T]) exten
 
   // todo: this is exactly the same with ThriftTypeSerializer::getRecordBytes, should move to a common trait/object
   private def getRecordBytes(inputStream: InputStream): Array[Byte] = {
-    val frameSizeBuffer = inputStream.readNBytes(FrameMetaSizeBytes) // todo: compiles only from Java 11+, should replace this for maximum compatibility (e.g., java 8+)
+    val frameSizeBuffer = new Array[Byte](FrameMetaSizeBytes)
+    inputStream.read(frameSizeBuffer,0,FrameMetaSizeBytes)
     val size = TFramedTransport.decodeFrameSize(frameSizeBuffer)
 
     if (size < 0) throw new TTransportException(s"Read a negative frame size ($size)!")

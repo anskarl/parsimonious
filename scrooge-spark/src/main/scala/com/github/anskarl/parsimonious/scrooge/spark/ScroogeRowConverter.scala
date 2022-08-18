@@ -1,17 +1,19 @@
 package com.github.anskarl.parsimonious.scrooge.spark
 
-import com.github.anskarl.parsimonious.scrooge.{ByteArrayThriftEncoder, ScroogeConfig, ScroogeHelpers}
+import com.github.anskarl.parsimonious.common.ParsimoniousConfig
+import com.github.anskarl.parsimonious.scrooge.{ByteArrayThriftEncoder, ScroogeHelpers}
 import com.twitter.scrooge.{ThriftEnum, ThriftStruct, ThriftStructCodec, ThriftStructFieldInfo, ThriftUnion}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 import org.apache.thrift.protocol.TType
+
 import java.nio.ByteBuffer
 import scala.reflect.ClassTag
 
 trait ScroogeRowConverterSchema {
 
   def extractSchema[T <: ThriftStruct with Product: ClassTag](structClass: Class[T])
-    (implicit scroogeConfig: ScroogeConfig = ScroogeConfig()): StructType ={
+    (implicit parsimoniousConfig: ParsimoniousConfig = ParsimoniousConfig()): StructType ={
 
     val codec = ThriftStructCodec.forStructClass(structClass)
     val fieldInfos: Seq[ThriftStructFieldInfo] = ScroogeHelpers.getFieldInfos(codec)
@@ -30,7 +32,7 @@ trait ScroogeRowConverterSchema {
     StructType(fields)
   }
 
-  protected def convertThriftFieldToDataType(fieldInfo: ThriftStructFieldInfo)(implicit scroogeConfig: ScroogeConfig): DataType = {
+  protected def convertThriftFieldToDataType(fieldInfo: ThriftStructFieldInfo)(implicit parsimoniousConfig: ParsimoniousConfig): DataType = {
     fieldInfo.tfield.`type` match {
       // Recursive Cases
       case TType.LIST | TType.SET =>
@@ -52,7 +54,7 @@ trait ScroogeRowConverterSchema {
         if (ScroogeHelpers.isPrimitive(keyThriftStructFieldInfo))
           MapType(keyDataType, valueDataType)
         else ArrayType(
-          StructType(Seq(StructField(scroogeConfig.keyName, keyDataType), StructField(scroogeConfig.valName, valueDataType))),
+          StructType(Seq(StructField(parsimoniousConfig.keyName, keyDataType), StructField(parsimoniousConfig.valName, valueDataType))),
           containsNull = false
         )
 
@@ -77,7 +79,7 @@ trait ScroogeRowConverterSchema {
 object ScroogeRowConverter extends ScroogeRowConverterSchema {
 
   def convert[T <: ThriftStruct with Product](instance: T)
-    (implicit scroogeConfig: ScroogeConfig = ScroogeConfig()): Row = {
+    (implicit parsimoniousConfig: ParsimoniousConfig = ParsimoniousConfig()): Row = {
 
     val codec = ThriftStructCodec.forStructClass(instance.getClass).asInstanceOf[ThriftStructCodec[T]]
     val fieldInfos: Seq[ThriftStructFieldInfo] = ScroogeHelpers.getFieldInfos(codec)
@@ -86,7 +88,7 @@ object ScroogeRowConverter extends ScroogeRowConverterSchema {
   }
 
   def convertWithCodec[T <: ThriftStruct with Product](codec: ThriftStructCodec[T], fieldInfos: Seq[ThriftStructFieldInfo], instance: T)
-    (implicit scroogeConfig: ScroogeConfig = ScroogeConfig()): Row = {
+    (implicit parsimoniousConfig: ParsimoniousConfig = ParsimoniousConfig()): Row = {
 
     if(codec.metaData.unionFields.isEmpty)
       convertStruct(instance, fieldInfos,  codec.asInstanceOf[ThriftStructCodec[ThriftStruct]])
@@ -98,7 +100,7 @@ object ScroogeRowConverter extends ScroogeRowConverterSchema {
     instance: T,
     fieldInfos: Seq[ThriftStructFieldInfo],
     codec: ThriftStructCodec[ThriftStruct]
-  )(implicit scroogeConfig: ScroogeConfig): Row ={
+  )(implicit parsimoniousConfig: ParsimoniousConfig): Row ={
 
     val elms = fieldInfos.zipWithIndex.map{ entry =>
       val (fieldInfo: ThriftStructFieldInfo, index: Int) = entry
@@ -113,7 +115,7 @@ object ScroogeRowConverter extends ScroogeRowConverterSchema {
     instance: T,
     fieldInfos: Seq[ThriftStructFieldInfo],
     codec: ThriftStructCodec[ThriftStruct]
-  )(implicit scroogeConfig: ScroogeConfig): Row = {
+  )(implicit parsimoniousConfig: ParsimoniousConfig): Row = {
 
     val instanceFieldInfo = instance.unionStructFieldInfo.get
     val instanceFieldName = instanceFieldInfo.tfield.name
@@ -131,14 +133,14 @@ object ScroogeRowConverter extends ScroogeRowConverterSchema {
   private def decodeSingle[T](
     elm: Any,
     fieldInfo: ThriftStructFieldInfo
-  )(implicit scroogeConfig: ScroogeConfig): Option[T] =
+  )(implicit parsimoniousConfig: ParsimoniousConfig): Option[T] =
     if(fieldInfo.isOptional) elm.asInstanceOf[Option[T]] else Option(elm.asInstanceOf[T])
 
   private def convertElmSeqToRowElmSeq(
     seq: Seq[Any],
     fieldInfo: ThriftStructFieldInfo,
     codec: ThriftStructCodec[ThriftStruct]
-  )(implicit scroogeConfig: ScroogeConfig): Seq[Any] =
+  )(implicit parsimoniousConfig: ParsimoniousConfig): Seq[Any] =
     seq.map(Option(_)).map(_.map(convertElmToRowElm(_, fieldInfo, codec)).orNull)
 
   private def extractIterElements(
@@ -146,14 +148,14 @@ object ScroogeRowConverter extends ScroogeRowConverterSchema {
     isOptional: Boolean,
     fieldInfo: ThriftStructFieldInfo,
     codec: ThriftStructCodec[ThriftStruct]
-  )(implicit scroogeConfig: ScroogeConfig): Option[Iterable[Any]] = {
+  )(implicit parsimoniousConfig: ParsimoniousConfig): Option[Iterable[Any]] = {
     if (isOptional)
       elm.asInstanceOf[Option[Iterable[Any]]].map(_.map(e => convertElmToRowElm(e, fieldInfo, codec)))
     else
       Option(elm.asInstanceOf[Iterable[Any]].map(e => convertElmToRowElm(e, fieldInfo, codec)))
   }
 
-  private def convertElmToRowElm(elm: Any, fieldInfo: ThriftStructFieldInfo, codec: ThriftStructCodec[ThriftStruct])(implicit scroogeConfig: ScroogeConfig): Any ={
+  private def convertElmToRowElm(elm: Any, fieldInfo: ThriftStructFieldInfo, codec: ThriftStructCodec[ThriftStruct])(implicit parsimoniousConfig: ParsimoniousConfig): Any ={
     fieldInfo.tfield.`type` match {
       // Recursive Cases
       case TType.LIST | TType.SET=>

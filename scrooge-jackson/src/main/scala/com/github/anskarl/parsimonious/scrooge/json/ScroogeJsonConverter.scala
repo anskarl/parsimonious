@@ -2,6 +2,7 @@ package com.github.anskarl.parsimonious.scrooge.json
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.github.anskarl.parsimonious.common.ParsimoniousConfig
 import com.github.anskarl.parsimonious.scrooge._
 import com.twitter.scrooge._
 import org.apache.thrift.protocol.TType
@@ -13,7 +14,7 @@ import scala.util.chaining.scalaUtilChainingOps
 object ScroogeJsonConverter {
   private final val nodeFactory = mapper.getNodeFactory
 
-  def convert[T <: ThriftStruct with Product](instance: T)(implicit scroogeConfig: ScroogeConfig): ObjectNode ={
+  def convert[T <: ThriftStruct with Product](instance: T)(implicit parsimoniousConfig: ParsimoniousConfig): ObjectNode ={
     val codec = com.twitter.scrooge.ThriftStructCodec.forStructClass(instance.getClass)
     val fieldInfos: Seq[ThriftStructFieldInfo] = ScroogeHelpers.getFieldInfos(codec)
 
@@ -21,7 +22,7 @@ object ScroogeJsonConverter {
     else convertUnion(instance.asInstanceOf[ThriftUnion])
   }
 
-  private def convertUnion[T <: ThriftUnion](instance: T)(implicit scroogeConfig: ScroogeConfig): ObjectNode = {
+  private def convertUnion[T <: ThriftUnion](instance: T)(implicit parsimoniousConfig: ParsimoniousConfig): ObjectNode = {
     val fieldInfo = instance.unionStructFieldInfo.get
     mapper.createObjectNode().tap{ node =>
       convertScroogeElmToJSONElm(instance.containedValue(), fieldInfo)
@@ -29,7 +30,7 @@ object ScroogeJsonConverter {
     }
   }
 
-  private def convertStruct[T <: ThriftStruct with Product](instance: T, fieldInfos: Seq[ThriftStructFieldInfo])(implicit scroogeConfig: ScroogeConfig): ObjectNode ={
+  private def convertStruct[T <: ThriftStruct with Product](instance: T, fieldInfos: Seq[ThriftStructFieldInfo])(implicit parsimoniousConfig: ParsimoniousConfig): ObjectNode ={
     fieldInfos.zipWithIndex.foldLeft(mapper.createObjectNode()){
       case (node, (fieldInfo, index)) =>
         val elm = instance.productElement(index)
@@ -39,10 +40,10 @@ object ScroogeJsonConverter {
     }
   }
 
-  private def decodeSingle[T](elm: Any, fieldInfo: ThriftStructFieldInfo)(implicit scroogeConfig: ScroogeConfig): Option[T] =
+  private def decodeSingle[T](elm: Any, fieldInfo: ThriftStructFieldInfo)(implicit parsimoniousConfig: ParsimoniousConfig): Option[T] =
     if(fieldInfo.isOptional) elm.asInstanceOf[Option[T]] else Option(elm.asInstanceOf[T])
 
-  private def convertScroogeElmToJSONElm(elm: Any, fieldInfo: ThriftStructFieldInfo)(implicit scroogeConfig: ScroogeConfig): Option[JsonNode] = {
+  private def convertScroogeElmToJSONElm(elm: Any, fieldInfo: ThriftStructFieldInfo)(implicit parsimoniousConfig: ParsimoniousConfig): Option[JsonNode] = {
     val fieldType = fieldInfo.tfield.`type`
 
     fieldType match {
@@ -114,7 +115,7 @@ object ScroogeJsonConverter {
     }
   }
 
-  private def convertMap(keyThriftStructFieldInfo: ThriftStructFieldInfo, valueThriftStructFieldInfo: ThriftStructFieldInfo, elm: Any)(implicit scroogeConfig: ScroogeConfig): JsonNode ={
+  private def convertMap(keyThriftStructFieldInfo: ThriftStructFieldInfo, valueThriftStructFieldInfo: ThriftStructFieldInfo, elm: Any)(implicit parsimoniousConfig: ParsimoniousConfig): JsonNode ={
     val mapEntries = elm.asInstanceOf[Map[Any,Any]]
 
     val keyVals = mapEntries.map{ case (k, v) =>
@@ -133,8 +134,8 @@ object ScroogeJsonConverter {
     else {
       val elements = keyVals.map{case (k,v) =>
         val objNode = nodeFactory.objectNode()
-        objNode.replace(scroogeConfig.keyName, k)
-        objNode.replace(scroogeConfig.valName, v)
+        objNode.replace(parsimoniousConfig.keyName, k)
+        objNode.replace(parsimoniousConfig.valName, v)
         objNode
       }.toSeq
 

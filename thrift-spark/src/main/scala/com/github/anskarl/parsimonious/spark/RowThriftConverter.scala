@@ -1,6 +1,7 @@
 package com.github.anskarl.parsimonious.spark
 
-import com.github.anskarl.parsimonious.{ClassTBaseType, TBaseType, ThriftConfig, UnsafeThriftHelpers}
+import com.github.anskarl.parsimonious.common.ParsimoniousConfig
+import com.github.anskarl.parsimonious.{ClassTBaseType, TBaseType, UnsafeThriftHelpers}
 import org.apache.spark.sql.Row
 import org.apache.thrift.meta_data._
 import org.apache.thrift.protocol.TType
@@ -18,7 +19,7 @@ object RowThriftConverter {
   def convert[T <: TBaseType](
     tbaseClass: Class[T],
     row: Row
-  )(implicit thriftConfig: ThriftConfig = ThriftConfig()): T =
+  )(implicit parsimoniousConfig: ParsimoniousConfig = ParsimoniousConfig()): T =
     convertRowToThriftGeneric(
       tbaseClass = tbaseClass.asInstanceOf[ClassTBaseType],
       row = row
@@ -28,7 +29,7 @@ object RowThriftConverter {
     tbaseClass: ClassTBaseType,
     row: Row,
     typeDefClasses: Map[String, ClassTBaseType] = Map.empty
-  )(implicit thriftConfig: ThriftConfig): TBaseType = {
+  )(implicit parsimoniousConfig: ParsimoniousConfig): TBaseType = {
 
     val fieldMeta = UnsafeThriftHelpers
       .getStructMetaDataMap(tbaseClass)
@@ -49,7 +50,7 @@ object RowThriftConverter {
               typeDefClasses = typeDefClasses + (typeDefName -> tbaseClass)
             ).asInstanceOf[Object]
 
-          instance.setFieldValue(field, datum) //todo
+          instance.setFieldValue(field, datum)
         }
     })
 
@@ -61,7 +62,7 @@ object RowThriftConverter {
     seq: Seq[Any],
     innerElmMeta: FieldValueMetaData,
     typeDefClasses: Map[String, ClassTBaseType]
-  )(implicit thriftConfig: ThriftConfig): Seq[Any] =
+  )(implicit parsimoniousConfig: ParsimoniousConfig): Seq[Any] =
     seq.map(Option(_)).map(_.map(convertRowElmToJavaElm(_, innerElmMeta, typeDefClasses)).orNull)
 
   /**
@@ -71,7 +72,7 @@ object RowThriftConverter {
     elm: Any,
     meta: FieldValueMetaData,
     typeDefClasses: Map[String, ClassTBaseType]
-  )(implicit thriftConfig: ThriftConfig): Any = {
+  )(implicit parsimoniousConfig: ParsimoniousConfig): Any = {
 
     if (meta.isBinary) ByteBuffer.wrap(elm.asInstanceOf[Array[Byte]]) else meta.`type` match {
       // Recursive Cases
@@ -86,7 +87,7 @@ object RowThriftConverter {
         // This case implies recursion
         case _ =>
           val recursiveInstance = typeDefClasses(meta.getTypedefName).getConstructor().newInstance()
-          thriftConfig.protocolDeserializer.deserialize(recursiveInstance.asInstanceOf[TBase[_, _]], elm.asInstanceOf[Array[Byte]])
+          parsimoniousConfig.protocolDeserializer.deserialize(recursiveInstance.asInstanceOf[TBase[_, _]], elm.asInstanceOf[Array[Byte]])
           recursiveInstance
       }
 

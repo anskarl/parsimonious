@@ -3,6 +3,7 @@ package com.github.anskarl.parsimonious.scrooge
 import com.twitter.scrooge.{ThriftStruct, ThriftStructCodec}
 import org.apache.thrift.protocol.TProtocol
 import org.apache.thrift.transport.{TByteBuffer, TMemoryInputTransport, TTransport}
+import com.github.anskarl.parsimonious.common.ParsimoniousConfig
 
 import java.nio.ByteBuffer
 
@@ -12,22 +13,22 @@ trait ThriftDecoder {
   type Transport <: TTransport
   type Protocol <: TProtocol
 
-  def createTransport(input: Input)(implicit scroogeConfig: ScroogeConfig): Transport
+  def createTransport(input: Input)(implicit parsimoniousConfig: ParsimoniousConfig): Transport
 
-  def createProtocol[T <: ThriftStruct](codec: ThriftStructCodec[T], transport: Transport)(implicit scroogeConfig: ScroogeConfig): Protocol
+  def createProtocol[T <: ThriftStruct](codec: ThriftStructCodec[T], transport: Transport)(implicit parsimoniousConfig: ParsimoniousConfig): Protocol
 
-  def apply[T <: ThriftStruct](codec: ThriftStructCodec[T], input: Input)(implicit scroogeConfig: ScroogeConfig): T
+  def apply[T <: ThriftStruct](codec: ThriftStructCodec[T], input: Input)(implicit parsimoniousConfig: ParsimoniousConfig): T
 }
 
 trait BaseThriftDecoder extends ThriftDecoder {
   
   type Protocol = TProtocol
 
-  override def createProtocol[T <: ThriftStruct](codec: ThriftStructCodec[T], transport: Transport)(implicit scroogeConfig: ScroogeConfig): Protocol = {
-    scroogeConfig.protocolFactory.getProtocol(transport)
+  override def createProtocol[T <: ThriftStruct](codec: ThriftStructCodec[T], transport: Transport)(implicit parsimoniousConfig: ParsimoniousConfig): Protocol = {
+    parsimoniousConfig.protocolFactory.getProtocol(transport)
   }
 
-  override def apply[T <: ThriftStruct](codec: ThriftStructCodec[T], input: Input)(implicit scroogeConfig: ScroogeConfig): T = {
+  override def apply[T <: ThriftStruct](codec: ThriftStructCodec[T], input: Input)(implicit parsimoniousConfig: ParsimoniousConfig): T = {
     val transport = createTransport(input)
     val protocol = createProtocol(codec, transport)
     codec.decode(protocol)
@@ -40,7 +41,7 @@ object ByteArrayThriftDecoder extends BaseThriftDecoder {
   type Transport = TMemoryInputTransport
 
   override def createTransport(input: Array[Byte])
-    (implicit scroogeConfig: ScroogeConfig): TMemoryInputTransport = new TMemoryInputTransport(input)
+    (implicit parsimoniousConfig: ParsimoniousConfig): TMemoryInputTransport = new TMemoryInputTransport(input)
 }
 
 object ByteBufferThriftDecoder extends BaseThriftDecoder {
@@ -49,6 +50,6 @@ object ByteBufferThriftDecoder extends BaseThriftDecoder {
   type Transport = TByteBuffer
 
   override def createTransport(input: ByteBuffer)
-    (implicit scroogeConfig: ScroogeConfig): TByteBuffer = new TByteBuffer(input)
+    (implicit parsimoniousConfig: ParsimoniousConfig): TByteBuffer = new TByteBuffer(input)
 }
 

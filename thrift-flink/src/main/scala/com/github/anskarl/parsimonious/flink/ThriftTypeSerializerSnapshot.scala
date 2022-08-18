@@ -4,6 +4,7 @@ import com.github.anskarl.parsimonious.TBaseType
 import org.apache.flink.api.common.typeutils.{TypeSerializer, TypeSerializerSchemaCompatibility, TypeSerializerSnapshot}
 import org.apache.flink.core.memory.{DataInputView, DataOutputView}
 import org.apache.flink.util.InstantiationUtil
+import com.github.anskarl.parsimonious.common.TProtocolFactoryType
 
 class ThriftTypeSerializerSnapshot[T <: TBaseType](
     tbaseClass: Class[T],

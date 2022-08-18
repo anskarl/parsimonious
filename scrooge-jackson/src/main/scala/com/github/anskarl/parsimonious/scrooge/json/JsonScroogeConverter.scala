@@ -2,7 +2,8 @@ package com.github.anskarl.parsimonious.scrooge.json
 
 import com.fasterxml.jackson.core.Base64Variants
 import com.fasterxml.jackson.databind.{JsonNode, node}
-import com.github.anskarl.parsimonious.scrooge.{ScroogeConfig, ScroogeHelpers, ThriftStructWithProduct, UnionBuilders}
+import com.github.anskarl.parsimonious.scrooge.{ScroogeHelpers, ThriftStructWithProduct, UnionBuilders}
+import com.github.anskarl.parsimonious.common.ParsimoniousConfig
 import com.twitter.scrooge._
 import org.apache.thrift.protocol.TType
 
@@ -12,7 +13,7 @@ import scala.reflect.runtime.{universe => ru}
 
 object JsonScroogeConverter {
 
-  def convert[T <: ThriftStruct with Product: ru.TypeTag](structClass: Class[T], jsonNode: JsonNode)(implicit unionBuilders: UnionBuilders, scroogeConfig: ScroogeConfig): T ={
+  def convert[T <: ThriftStruct with Product: ru.TypeTag](structClass: Class[T], jsonNode: JsonNode)(implicit unionBuilders: UnionBuilders, parsimoniousConfig: ParsimoniousConfig): T ={
     val codec: ThriftStructCodec[T] = com.twitter.scrooge.ThriftStructCodec.forStructClass(structClass)
     val isUnion = codec.metaData.unionFields.nonEmpty
 
@@ -21,7 +22,7 @@ object JsonScroogeConverter {
 
   }
 
-  private def convertUnion[T <: ThriftStruct: ru.TypeTag](jsonNode: JsonNode, codec: ThriftStructCodec[T])(implicit unionBuilders: UnionBuilders, scroogeConfig: ScroogeConfig): T ={
+  private def convertUnion[T <: ThriftStruct: ru.TypeTag](jsonNode: JsonNode, codec: ThriftStructCodec[T])(implicit unionBuilders: UnionBuilders, parsimoniousConfig: ParsimoniousConfig): T ={
     val unionFields = codec.metaData.unionFields
 
     val fieldNames: Seq[String] = unionFields.map(_.structFieldInfo.tfield.name)
@@ -37,7 +38,7 @@ object JsonScroogeConverter {
 
   private def convertStruct[T <: ThriftStruct with Product](
     jsonNode: JsonNode,
-    codecWithBuilder: ThriftStructCodec[T] with StructBuilderFactory[T])(implicit unionBuilders: UnionBuilders, scroogeConfig: ScroogeConfig): T ={
+    codecWithBuilder: ThriftStructCodec[T] with StructBuilderFactory[T])(implicit unionBuilders: UnionBuilders, parsimoniousConfig: ParsimoniousConfig): T ={
 
     val fieldInfos: Seq[ThriftStructFieldInfo] = ScroogeHelpers.getFieldInfos(codecWithBuilder)
     val builder = codecWithBuilder.newBuilder()
@@ -56,7 +57,7 @@ object JsonScroogeConverter {
   }
 
 
-  def convertJsonElmToScroogeElm(elm: Any, fieldInfo: ThriftStructFieldInfo)(implicit unionBuilders: UnionBuilders, scroogeConfig: ScroogeConfig): Any ={
+  def convertJsonElmToScroogeElm(elm: Any, fieldInfo: ThriftStructFieldInfo)(implicit unionBuilders: UnionBuilders, parsimoniousConfig: ParsimoniousConfig): Any ={
     val fieldType = fieldInfo.tfield.`type`
 
     fieldType match {
@@ -100,8 +101,8 @@ object JsonScroogeConverter {
           else {
             val arrayNode = elm.asInstanceOf[node.ArrayNode]
             arrayNode.asScala.map{ element =>
-              val keyNode = element.get(scroogeConfig.keyName)
-              val valueNode = element.get(scroogeConfig.valName)
+              val keyNode = element.get(parsimoniousConfig.keyName)
+              val valueNode = element.get(parsimoniousConfig.valName)
 
               val key = convertJsonElmToScroogeElm(keyNode,keyThriftStructFieldInfo)
               val value = convertJsonElmToScroogeElm(valueNode,valueThriftStructFieldInfo)

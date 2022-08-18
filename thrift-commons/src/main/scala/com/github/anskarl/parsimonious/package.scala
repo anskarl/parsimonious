@@ -1,7 +1,6 @@
 package com.github.anskarl
 
-import org.apache.thrift.protocol.TCompactProtocol
-import org.apache.thrift.{TBase, TDeserializer, TFieldIdEnum, TSerializer}
+import org.apache.thrift.{TBase, TFieldIdEnum}
 
 package object parsimonious {
 
@@ -9,10 +8,4 @@ package object parsimonious {
 
   type ClassTBaseType = Class[_ <: TBaseType]
 
-  case class ThriftConfig(
-    keyName: String = "key",
-    valName: String = "value",
-    protocolSerializer: TSerializer = new TSerializer(new TCompactProtocol.Factory()),
-    protocolDeserializer: TDeserializer = new TDeserializer(new TCompactProtocol.Factory())
-  )
 }

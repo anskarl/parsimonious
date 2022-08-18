@@ -1,15 +1,16 @@
 package com.github.anskarl.parsimonious.json
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.github.anskarl.parsimonious.{TBaseType, ThriftConfig}
-import org.apache.thrift.{TBase, TDeserializer, TSerializer}
+import com.github.anskarl.parsimonious.TBaseType
+import com.github.anskarl.parsimonious.common.ParsimoniousConfig
+import org.apache.thrift.TBase
 
 object Converters {
 
   implicit class JsonStringThrift(val src: String) extends AnyVal {
 
     def as[T <: TBaseType](tBaseClass: Class[T])
-      (implicit thriftConfig: ThriftConfig = ThriftConfig()): T = {
+      (implicit parsimoniousConfig: ParsimoniousConfig = ParsimoniousConfig()): T = {
       val jsonNode = mapper.readTree(src)
       JsonThriftConverter.convert(tBaseClass, jsonNode)
     }
@@ -19,7 +20,7 @@ object Converters {
   implicit class JsonNodeThrift(val jsonNode: JsonNode) extends AnyVal {
 
     def as[T <: TBaseType](tBaseClass: Class[T])
-      (implicit thriftConfig: ThriftConfig = ThriftConfig()): T = {
+      (implicit parsimoniousConfig: ParsimoniousConfig = ParsimoniousConfig()): T = {
       JsonThriftConverter.convert(tBaseClass, jsonNode)
     }
 
@@ -27,7 +28,7 @@ object Converters {
 
   implicit class ThriftJsonString[T <: TBase[_, _]](val instance: T) extends AnyVal {
 
-    def toJsonString(implicit thriftConfig: ThriftConfig = ThriftConfig()): String =
+    def toJsonString(implicit parsimoniousConfig: ParsimoniousConfig = ParsimoniousConfig()): String =
       ThriftJsonConverter.convert(instance.asInstanceOf[TBase[_,_]]).toString
 
   }
@@ -35,7 +36,7 @@ object Converters {
 
   implicit class ThriftJsonNode[T <: TBase[_, _]](val instance: T) extends AnyVal {
 
-    def toJsonNode(implicit thriftConfig: ThriftConfig = ThriftConfig()): JsonNode =
+    def toJsonNode(implicit parsimoniousConfig: ParsimoniousConfig = ParsimoniousConfig()): JsonNode =
       ThriftJsonConverter.convert(instance.asInstanceOf[TBase[_,_]]).jsonNode
 
   }

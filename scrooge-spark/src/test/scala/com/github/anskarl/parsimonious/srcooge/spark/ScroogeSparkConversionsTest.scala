@@ -1,7 +1,8 @@
 package com.github.anskarl.parsimonious.srcooge.spark
 
+import com.github.anskarl.parsimonious.common.ParsimoniousConfig
 import com.github.anskarl.parsimonious.scrooge.models._
-import com.github.anskarl.parsimonious.scrooge.{DummyScroogeGenerators, ScroogeConfig, UnionBuilders}
+import com.github.anskarl.parsimonious.scrooge.{DummyScroogeGenerators, UnionBuilders}
 import com.github.anskarl.parsimonious.scrooge.spark.{RowScroogeConverter, ScroogeRowConverter}
 import com.github.anskarl.parsimonious.spark.SparkSessionTestSuite
 import org.apache.spark.rdd.RDD
@@ -16,7 +17,7 @@ import com.github.anskarl.parsimonious.scrooge.spark.Converters._
 
 class ScroogeSparkConversionsTest extends AnyWordSpecLike with SparkSessionTestSuite with Matchers with Checkers with DummyScroogeGenerators {
 
-  private implicit val scroogeConfig: ScroogeConfig = ScroogeConfig()
+  private implicit val parsimoniousConfig: ParsimoniousConfig = ParsimoniousConfig()
 
   "Scrooge Row <> Thrift converters" should {
     "encode/decode Thrift generated classes to Spark Rows" in {

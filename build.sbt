@@ -77,6 +77,12 @@ def module(name: String): Project =
 
 def module(name: String, versionPrefix: String): Project = module(name).settings(version := s"${versionPrefix}-${version.value}")
 
+lazy val commons = module("commons", s"thrift_${thriftMajorVersion}")
+  .disablePlugins(ScroogeSBT, ThriftPlugin)
+  .settings(crossScalaVersions := DefaultCrossScalaVersions)
+  .settings(libraryDependencies += Dependencies.thrift(thriftVersion))
+
+
 /**
   * Helper module to hold the source code of thrift structures that will be used in unit tests
   */
@@ -89,6 +95,7 @@ lazy val thriftModels = module("thrift").disablePlugins(ScroogeSBT, ThriftPlugin
   )
 
 lazy val thriftCommons = module("thrift-commons", s"thrift_${thriftMajorVersion}")
+  .dependsOn(commons % "compile->compile;test->test")
   .disablePlugins(ScroogeSBT)
   .settings(crossScalaVersions := DefaultCrossScalaVersions)
   .settings(libraryDependencies += Dependencies.thrift(thriftVersion))
@@ -125,6 +132,7 @@ lazy val thriftSpark = module("thrift-spark", s"thrift_${thriftMajorVersion}_${s
   .settings(libraryDependencies ++= Dependencies.Jackson)
 
 lazy val scroogeCommons = module("scrooge-commons")
+  .dependsOn(commons)
   .disablePlugins(ThriftPlugin)
   .settings(crossScalaVersions := DefaultCrossScalaVersions)
   .settings(libraryDependencies += Dependencies.thrift("0.10.0"))
@@ -165,6 +173,7 @@ lazy val flinkCommons = module("flink-commons", s"thrift_${thriftMajorVersion}_$
   .settings(crossScalaVersions := Seq.empty)
   .settings(libraryDependencies += Dependencies.UtilBackports)
   .settings(libraryDependencies ++= Dependencies.flinkDependenciesFor(flinkProfile))
+  .settings(libraryDependencies += Dependencies.thrift(thriftVersion))
 
 
 lazy val thriftFlink = module("thrift-flink", s"thrift_${thriftMajorVersion}_${flinkProfile}")
@@ -189,4 +198,4 @@ lazy val root = Project("parsimonious", file("."))
   .settings(scalaVersion := DefaultScalaVersion)
   .settings(Seq(publish := {}, publishLocal := {}, publish / skip := true))
   .settings(commonSettings)
-  .aggregate(sparkCommons, thriftCommons, thriftSpark, thriftJackson, scroogeCommons, scroogeJackson, scroogeSpark, flinkCommons, thriftFlink, scroogeFlink)
+  .aggregate(commons, sparkCommons, thriftCommons, thriftSpark, thriftJackson, scroogeCommons, scroogeJackson, scroogeSpark, flinkCommons, thriftFlink, scroogeFlink)

@@ -1,4 +1,4 @@
-package com.github.anskarl.parsimonious.flink
+package com.github.anskarl.parsimonious.common
 
 import org.apache.thrift.protocol.{TBinaryProtocol, TCompactProtocol, TJSONProtocol, TProtocolFactory}
 

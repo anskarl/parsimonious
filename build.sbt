@@ -59,10 +59,10 @@ def thriftCmd(majorVersion: String): String = majorVersion match {
 }
 
 def module(name: String): Project =
-  Project(s"parsimonious-${name}", file(name))
+  Project(s"${name}", file(name))
     .settings(scalaVersion := DefaultScalaVersion)
     .settings(
-      organization := "com.github.anskarl",
+      organization := "com.github.anskarl.parsimonious",
       publishMavenStyle := true
     )
     .settings(
@@ -88,7 +88,7 @@ lazy val thriftModels = module("thrift").disablePlugins(ScroogeSBT, ThriftPlugin
     packageSrc / publishArtifact := false
   )
 
-lazy val commons = module("commons", s"thrift_${thriftMajorVersion}")
+lazy val thriftCommons = module("thrift-commons", s"thrift_${thriftMajorVersion}")
   .disablePlugins(ScroogeSBT)
   .settings(crossScalaVersions := DefaultCrossScalaVersions)
   .settings(libraryDependencies += Dependencies.thrift(thriftVersion))
@@ -104,8 +104,8 @@ lazy val commons = module("commons", s"thrift_${thriftMajorVersion}")
     dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-databind" % Dependencies.v.Jackson
   )
 
-lazy val jackson = module("jackson", s"thrift_${thriftMajorVersion}")
-  .dependsOn(commons % "compile->compile;test->test")
+lazy val thriftJackson = module("thrift-jackson", s"thrift_${thriftMajorVersion}")
+  .dependsOn(thriftCommons % "compile->compile;test->test")
   .settings(crossScalaVersions := DefaultCrossScalaVersions)
   .settings(libraryDependencies ++= Dependencies.Jackson)
 
@@ -116,8 +116,8 @@ lazy val sparkCommons = module("spark-commons", s"thrift_${thriftMajorVersion}_$
   .settings(libraryDependencies ++= Dependencies.sparkDependenciesFor(sparkProfile))
   .settings(libraryDependencies ++= Dependencies.Jackson)
 
-lazy val spark = module("spark", s"thrift_${thriftMajorVersion}_${sparkProfile}")
-  .dependsOn(commons % "compile->compile;test->test")
+lazy val thriftSpark = module("thrift-spark", s"thrift_${thriftMajorVersion}_${sparkProfile}")
+  .dependsOn(thriftCommons % "compile->compile;test->test")
   .dependsOn(sparkCommons % "compile->compile;test->test")
   .settings(crossScalaVersions := (if(sparkProfile == "spark2") Seq(DefaultScalaVersion) else DefaultCrossScalaVersions  ))
   .settings(resolvers += ("Twitter Maven Repo" at "http://maven.twttr.com").withAllowInsecureProtocol(true))
@@ -167,8 +167,8 @@ lazy val flinkCommons = module("flink-commons", s"thrift_${thriftMajorVersion}_$
   .settings(libraryDependencies ++= Dependencies.flinkDependenciesFor(flinkProfile))
 
 
-lazy val flink = module("flink", s"thrift_${thriftMajorVersion}_${flinkProfile}")
-  .dependsOn(commons % "compile->compile;test->test")
+lazy val thriftFlink = module("thrift-flink", s"thrift_${thriftMajorVersion}_${flinkProfile}")
+  .dependsOn(thriftCommons % "compile->compile;test->test")
   .dependsOn(flinkCommons % "compile->compile;test->test")
   .settings(scalaVersion := DefaultScalaVersion)
   .settings(crossScalaVersions := Seq.empty)
@@ -189,4 +189,4 @@ lazy val root = Project("parsimonious", file("."))
   .settings(scalaVersion := DefaultScalaVersion)
   .settings(Seq(publish := {}, publishLocal := {}, publish / skip := true))
   .settings(commonSettings)
-  .aggregate(sparkCommons, commons, spark, jackson, scroogeCommons, scroogeJackson, scroogeSpark, flinkCommons, flink, scroogeFlink)
+  .aggregate(sparkCommons, thriftCommons, thriftSpark, thriftJackson, scroogeCommons, scroogeJackson, scroogeSpark, flinkCommons, thriftFlink, scroogeFlink)

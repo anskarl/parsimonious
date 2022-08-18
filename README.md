@@ -4,10 +4,10 @@
 ┴  ┴ ┴┴└─└─┘┴┴ ┴└─┘┘└┘┴└─┘└─┘└─┘
 ```
 _Parsimonious_ is a helper library for encoding/decoding Apache Thrift and Twitter Scrooge classes to Spark Dataframes, 
-Jackson JSON and Apache Flink TypeSerializer. 
+Jackson JSON and Apache Flink state serializers. 
 
   - The implementation for Spark is based on [airbnb-spark-thrift](https://github.com/airbnb/airbnb-spark-thrift/tree/nwparker/convV2).
-  - The implementation for Flink support is inspired by [findify flink-protobuf](https://github.com/findify/flink-protobuf).
+  - The implementation for Flink state serializers is inspired by [findify flink-protobuf](https://github.com/findify/flink-protobuf).
 
 Important features:
 
@@ -38,7 +38,7 @@ struct BasicDummy {
 }
 ```
 
-### Apache Thrift interoperability with Apache Spark
+### Apache Thrift with Apache Spark
 
 Create a Spark Dataframe:
 
@@ -119,7 +119,7 @@ decodedInputSeq.take(5).foreach(println)
 // BasicDummy(reqStr:index: 5, int32:5, bl:false)
 ```
 
-### Apache Thrift interoperability with Jackson for JSON support
+### Apache Thrift with Jackson for JSON support
 
 Encode/Decode Apache Thrift POJO class to/from Jackson node:
 
@@ -217,7 +217,7 @@ To decode from JSON back to Thrift POJO:
 val decoded: BasicDummy = JsonThriftConverter.convert(classOf[BasicDummy], encoded)
 ```
 
-### Scrooge Thrift interoperability with Apache Spark
+### Scrooge Thrift with Apache Spark
 
 Create a Spark Dataframe:
 
@@ -293,7 +293,7 @@ val decodedInputSeq: Seq[BasicDummy] = dfRows
     .toSeq
 ```
 
-### Scrooge Thrift interoperability with Jackson for JSON support
+### Scrooge Thrift with Jackson for JSON support
 
 Encode/Decode Scrooge generated classes to/from Jackson node:
 
@@ -399,109 +399,117 @@ implicit val unionBuilders = UnionBuilders.create(classOf[BasicDummy])
 val decoded: BasicDummy = JsonScroogeConverter.convert(classOf[BasicDummy], encodedJson)
 ```
 
+### Apache Thrift with Apache Flink
+TODO
+
+### Twitter Scrooge with Apache Flink
+TODO
+
 ## Dependencies
 
 Version variants published in `oss.sonatype.org`
  - scala_version: `2.12`, `2.13`
  - thrift_version: `thrift_0.10`, `thrift_0.13`
- - spark_version: `spark2` (i.e., 2.4.x), `spark3` (i.e., 3.1.x)
+ - spark_profile: `spark2` (i.e., 2.4.x), `spark3` (i.e., 3.1.x)
+ - flink_profile: `flink1_13`, `flink1_14` and `flink1_15`
  - parsimonious_version: e.g., `0.4.0`
 
 #### Maven
 
-***parsimonious-commons***:
+***thrift-jackson***:
 ```
 <dependency>
-  <groupId>com.github.anskarl</groupId>
-  <artifactId>parsimonious-commons_[scala_version]</artifactId>
+  <groupId>com.github.anskarl.parsimonious</groupId>
+  <artifactId>thrift-jackson_[scala_version]</artifactId>
   <version>[thrift_version]-[parsimonious_version]</version>
 </dependency>
 ```
 
-***parsimonious-jackson***:
+***thrift-spark***:
 ```
 <dependency>
-  <groupId>com.github.anskarl</groupId>
-  <artifactId>parsimonious-jackson_[scala_version]</artifactId>
+  <groupId>com.github.anskarl.parsimonious</groupId>
+  <artifactId>thrift-spark_[scala_version]</artifactId>
+  <version>[thrift_version]_[spark_profile]-[parsimonious_version]</version>
+</dependency>
+```
+
+***scrooge-jackson***:
+```
+<dependency>
+  <groupId>com.github.anskarl.parsimonious</groupId>
+  <artifactId>scrooge-jackson_[scala_version]</artifactId>
   <version>[thrift_version]-[parsimonious_version]</version>
 </dependency>
 ```
 
-***parsimonious-spark***:
+***scrooge-spark***:
 ```
 <dependency>
-  <groupId>com.github.anskarl</groupId>
-  <artifactId>parsimonious-spark_[scala_version]</artifactId>
-  <version>[thrift_version]_[spark_version]-[parsimonious_version]</version>
+  <groupId>com.github.anskarl.parsimonious</groupId>
+  <artifactId>scrooge-spark_[scala_version]</artifactId>
+  <version>[thrift_version]_[spark_profile]-[parsimonious_version]</version>
 </dependency>
 ```
 
-***parsimonious-scrooge-commons***:
+***thrift-flink***:
 ```
 <dependency>
-  <groupId>com.github.anskarl</groupId>
-  <artifactId>parsimonious-scrooge-commons_[scala_version]</artifactId>
-  <version>[thrift_version]-[parsimonious_version]</version>
+  <groupId>com.github.anskarl.parsimonious</groupId>
+  <artifactId>thrift-flink_2.12</artifactId>
+  <version>[thrift_version]_[flink_profile]-[parsimonious_version]</version>
 </dependency>
 ```
 
 
-***parsimonious-scrooge-jackson***:
+***scrooge-flink***:
 ```
 <dependency>
-  <groupId>com.github.anskarl</groupId>
-  <artifactId>parsimonious-scrooge-jackson_[scala_version]</artifactId>
-  <version>[thrift_version]-[parsimonious_version]</version>
+  <groupId>com.github.anskarl.parsimonious</groupId>
+  <artifactId>scrooge-flink_2.12</artifactId>
+  <version>[thrift_version]_[flink_profile]-[parsimonious_version]</version>
 </dependency>
 ```
 
-***parsimonious-scrooge-spark***:
-```
-<dependency>
-  <groupId>com.github.anskarl</groupId>
-  <artifactId>parsimonious-scrooge-spark_[scala_version]</artifactId>
-  <version>[thrift_version]_[spark_major_version]-[parsimonious_version]</version>
-</dependency>
-```
 
 #### SBT
 
 See the [official docs](https://www.scala-sbt.org/1.x/docs/Resolvers.html) to configure Sonatype (snapshots) 
 resolver in your SBT project. For example:
 ```
-resolvers += Resolver.sonatypeRepo("public") //  (or “snapshots”, “staging”, “releases”) 
+resolvers += Resolver.sonatypeRepo("public") //  (or “snapshots”, “releases”) 
 ```
 
-***parsimonious-commons***:
+***thrift-jackson***:
 ```
-"com.github.anskarl" %% "parsimonious-commons" % "[thrift_version]-[parsimonious_version]"
-```
-
-***parsimonious-jackson***:
-```
-"com.github.anskarl" %% "parsimonious-jackson" % "[thrift_version]-[parsimonious_version]"
+"com.github.anskarl.parsimonious" %% "thrift-jackson" % "[thrift_version]-[parsimonious_version]"
 ```
 
-***parsimonious-spark***:
+***thrift-spark***:
 ```
-"com.github.anskarl" %% "parsimonious-spark" % "[thrift_version]_[spark_version]-[parsimonious_version]"
-```
-
-***parsimonious-scrooge-commons***:
-```
-"com.github.anskarl" %% "parsimonious-scrooge-commons" % "[thrift_version]-[parsimonious_version]"
+"com.github.anskarl.parsimonious" %% "thrift-spark" % "[thrift_version]_[spark_profile]-[parsimonious_version]"
 ```
 
+***scrooge-jackson***:
+```
+"com.github.anskarl.parsimonious" %% "scrooge-jackson" % "[thrift_version]-[parsimonious_version]"
+```
 
-***parsimonious-scrooge-jackson***:
+***scrooge-spark***:
 ```
-"com.github.anskarl" %% "parsimonious-scrooge-jackson" % "[thrift_version]-[parsimonious_version]"
+"com.github.anskarl.parsimonious" %% "scrooge-spark" % "[thrift_version]_[spark_profile]-[parsimonious_version]"
 ```
 
-***parsimonious-scrooge-spark***:
+***thrift-flink***:
 ```
-"com.github.anskarl" %% "parsimonious-scrooge-spark" % "[thrift_version]_[spark_version]-[parsimonious_version]"
+"com.github.anskarl.parsimonious" % "thrift-flink_2.12" % "[thrift_version]_[flink_profile]-[parsimonious_version]"
 ```
+
+***scrooge-flink***:
+```
+"com.github.anskarl.parsimonious" % "scrooge-flink_2.12" % "[thrift_version]_[flink_profile]-[parsimonious_version]"
+```
+
 
 ## Build from sources
 
@@ -510,28 +518,29 @@ To build parsimonious from sources you will need an SBT version 1.6+. The build 
   - `SPARK_PROFILE`: can be either `spark2` or `spark3` (default is `spark3`).
     * In `spark2` parsimonious is build for Spark v2.4.6, Hadoop v2.10.0 and Parquet v1.10.1.
     * In `spark3` parsimonious is build for Spark v3.2.0, Hadoop v3.3.1 and Parquet v1.12.2.
+  - `FLINK_PROFILE`: can be one of `flink1_13`,`flink1_14` and `flink1_15`
 
 For all variants of `THRIFT_VERSION` and `SPARK_PROFILE`, parsimonious can be cross-build for Scala 2.12 and 2.13.
+Flink modules are only build for Scala 2.12 (2.13 is not currently supported by Flink).
 
 There are several sbt command aliases to build any of the parsimonious modules separately or all together. 
 For a complete list see the `.sbtrc` file. 
 
 ##### All modules using default settings
 
-The following command will build all modules, using default version of Thrift (0.10) and Spark (3.2).
+The following command will build all modules, using default version of Thrift (0.10), Spark (3.2) and Flink (1.13)
 
 ```shell
 sbt build-all
 ```
 
-##### All modules with custom Thrift and Spark version
+##### All modules with custom Thrift, Spark and Flink versions
 
-The following command will build all modules for Thrift version 0.13.0 and Spark 2 (2.4.x).
+The following command will build all modules for Thrift version 0.13.0, Spark 2 (2.4.x) and Flink 1.15
 
 ```shell
-THRIFT_VERSION=0.13.0 SPARK_PROFILE=spark2 sbt build-all
+THRIFT_VERSION=0.13.0 SPARK_PROFILE=spark2 FLINK_PROFILE=flink1_15 sbt build-all
 ```
-
 
 ##### Specific module using default settings
 

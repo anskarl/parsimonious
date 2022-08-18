@@ -2,13 +2,15 @@ import sbt._
 import sbt.Keys._
 import com.intenthq.sbt.ThriftPlugin._
 
+val DefaultScalaVersion = "2.12.12"
+val DefaultCrossScalaVersions = Seq("2.12.12", "2.13.8")
+
+val releaseToSonatype = sys.env.getOrElse("RELEASE_SONATYPE", "false").toBoolean
+
 val thriftVersion = sys.env.getOrElse("THRIFT_VERSION", "0.10.0")
 val thriftMajorVersion = thriftVersion.substring(0, thriftVersion.lastIndexOf("."))
 val sparkProfile = sys.env.getOrElse("SPARK_PROFILE", "spark3").toLowerCase()
-val releaseToSonatype = sys.env.getOrElse("RELEASE_SONATYPE", "false").toBoolean
-val DefaultScalaVersion = "2.12.12"
-val DefaultCrossScalaVersions = Seq("2.12.12", "2.13.8")
-val flinkMajorVersion = "1.13"
+val flinkProfile = sys.env.getOrElse("FLINK_PROFILE", "flink1_13").toLowerCase()
 
 
 val commonSettings = Seq(
@@ -158,29 +160,29 @@ lazy val scroogeSpark = module("scrooge-spark", s"thrift_${thriftMajorVersion}_$
   .settings(dependencyOverrides += "org.json4s" %% "json4s-scalap" % "3.7.0-M11")
 
 
-lazy val flinkCommons = module("flink-commons", s"thrift_${thriftMajorVersion}_${flinkMajorVersion}")
+lazy val flinkCommons = module("flink-commons", s"thrift_${thriftMajorVersion}_${flinkProfile}")
   .settings(scalaVersion := DefaultScalaVersion)
   .settings(crossScalaVersions := Seq.empty)
   .settings(libraryDependencies += Dependencies.UtilBackports)
-  .settings(libraryDependencies ++= Dependencies.Flink)
+  .settings(libraryDependencies ++= Dependencies.flinkDependenciesFor(flinkProfile))
 
 
-lazy val flink = module("flink", s"thrift_${thriftMajorVersion}_${flinkMajorVersion}")
+lazy val flink = module("flink", s"thrift_${thriftMajorVersion}_${flinkProfile}")
   .dependsOn(commons % "compile->compile;test->test")
   .dependsOn(flinkCommons % "compile->compile;test->test")
   .settings(scalaVersion := DefaultScalaVersion)
   .settings(crossScalaVersions := Seq.empty)
   .settings(libraryDependencies += Dependencies.UtilBackports)
-  .settings(libraryDependencies ++= Dependencies.Flink)
+  .settings(libraryDependencies ++= Dependencies.flinkDependenciesFor(flinkProfile))
 
 
-lazy val scroogeFlink = module("scrooge-flink", s"thrift_${thriftMajorVersion}_${flinkMajorVersion}")
+lazy val scroogeFlink = module("scrooge-flink", s"thrift_${thriftMajorVersion}_${flinkProfile}")
   .dependsOn(scroogeCommons % "compile->compile;test->test")
   .dependsOn(flinkCommons % "compile->compile;test->test")
   .settings(scalaVersion := DefaultScalaVersion)
   .settings(crossScalaVersions := Seq.empty)
   .settings(libraryDependencies += Dependencies.UtilBackports)
-  .settings(libraryDependencies ++= Dependencies.Flink)
+  .settings(libraryDependencies ++= Dependencies.flinkDependenciesFor(flinkProfile))
 
 
 lazy val root = Project("parsimonious", file("."))

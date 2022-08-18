@@ -19,14 +19,32 @@ object Dependencies {
         final val UtilBackports = "2.1"
         final val SLF4J = "1.7.25"
         final val Jackson = "2.13.2"
-
         final val ScalaCollectionCompat = "2.7.0"
-
         final val JavaXAnnotationApi = "1.3.2"
 
-
-//        final val Thrift10 = "0.10.0"
         final val TwitterLib = "22.4.0"
+    }
+
+    def flinkDependenciesFor(profile: String): Seq[ModuleID] = {
+        profile match {
+            case "flink1_13" =>
+                Seq(
+                    "org.apache.flink" %% "flink-streaming-scala" % "1.13.6",
+                    "org.apache.flink" %% "flink-test-utils" % "1.13.6" % Test
+                )
+            case "flink1_14" =>
+                Seq(
+                    "org.apache.flink" %% "flink-streaming-scala" % "1.14.5",
+                    "org.apache.flink" %% "flink-test-utils" % "1.14.5" % Test
+                )
+            case "flink1_15" =>
+                Seq(
+                    "org.apache.flink" %% "flink-streaming-scala" % "1.15.1",
+                    "org.apache.flink" % "flink-test-utils" % "1.15.1" % Test
+                )
+            case _ => throw new IllegalArgumentException(s"Unknown Flink profile name '$profile'")
+
+        }
     }
 
 
@@ -34,7 +52,7 @@ object Dependencies {
         val (sparkVersion, hadoopVersion, parquetVersion) = profile match {
             case "spark2" => (v.Spark2, v.Hadoop2, v.Parquet10)
             case "spark3" => (v.Spark3, v.Hadoop3, v.Parquet12)
-            case _ => throw new IllegalArgumentException(s"Unknown profile name '$profile'")
+            case _ => throw new IllegalArgumentException(s"Unknown Spark profile name '$profile'")
         }
         Seq(
             // Hadoop
@@ -105,10 +123,5 @@ object Dependencies {
     lazy val Scrooge = Seq(
         "com.twitter" %% "scrooge-core" % v.TwitterLib exclude ("com.twitter", "libthrift"),
         "com.twitter" %% "scrooge-generator" % v.TwitterLib % "provided" exclude ("com.twitter", "libthrift")
-    )
-
-    lazy val Flink = Seq(
-        "org.apache.flink" %% "flink-streaming-scala" % "1.13.6",
-        "org.apache.flink" %% "flink-test-utils" % "1.13.6" % Test
     )
 }

@@ -399,20 +399,75 @@ implicit val unionBuilders = UnionBuilders.create(classOf[BasicDummy])
 val decoded: BasicDummy = JsonScroogeConverter.convert(classOf[BasicDummy], encodedJson)
 ```
 
-### Apache Thrift with Apache Flink
-TODO
+### Flink state serializers for Apache Thrift
 
-### Twitter Scrooge with Apache Flink
-TODO
+Parsimonious provides [state serializer](https://nightlies.apache.org/flink/flink-docs-release-1.15/docs/dev/datastream/fault-tolerance/serialization/custom_serialization/) for Apache Thrift generated classes. To enable Thrift compatible 
+state serializer you need to create [TypeInformation](https://nightlies.apache.org/flink/flink-docs-release-1.15/docs/dev/datastream/fault-tolerance/serialization/types_serialization/#flinks-typeinformation-class) for Thrift generated classes.
+
+For example, to specify type information for class `BasicDummy`:
+
+```scala
+import com.github.anskarl.parsimonious.flink._
+
+val typeInformation = ThriftTypeInformation(classOf[BasicDummy])
+```
+
+### Flink state serializers for Twitter Scrooge
+
+Similarly, parsimonious provides [state serializer](https://nightlies.apache.org/flink/flink-docs-release-1.15/docs/dev/datastream/fault-tolerance/serialization/custom_serialization/) for Twitter Scrooge generated classes. To enable Scrooge compatible
+state serializer you need to create [TypeInformation](https://nightlies.apache.org/flink/flink-docs-release-1.15/docs/dev/datastream/fault-tolerance/serialization/types_serialization/#flinks-typeinformation-class) for Scrooge generated classes. 
+
+For example, to specify type information for class `BasicDummy`:
+
+```scala
+import com.github.anskarl.parsimonious.scrooge.flink._
+
+val typeInformation = ScroogeTypeInformation(classOf[BasicDummy])
+```
+
+## Configure Parsimonious
+Please note that the type of key in both `mapPrimitives` and `mapStructKey` is not string.
+In such cases _Parsimonious_ converts them to lists of structs with the pair of fields
+`"key"` and `"value"`. That convention, is being performed since JSON does not support
+maps having keys with type different of string.
+
+
+You can configure the parameters of Parsimonious modules by specifying an implicit value of `ParsimoniousConfig` class. 
+The parameters are the following:
+
+  - In JSON, when the type of key in some Thrift `map` collection is not a string, _Parsimonious_ converts them to 
+  lists of structs with the pair of fields. Each struct is composed of a pair fields (key and value). The default field 
+  names are `"key"` and `"value"`, but they can change by specifying `keyName` and `valueName` respectively in
+  `ParsimoniousConfig` class.
+  - You can also change the serialization protocol by specifying the `TProtocolFactoryType` in field 
+  `protocolFactoryType`.  _Parsimonious_ supports the following protocols:
+    1. TCompactProtocolFactoryType (default), that creates TProtocolFactory that produces TCompactProtocols.
+    2. TBinaryProtocolFactoryType, that creates TProtocolFactory that produces TBinaryProtocols.
+    3. TJSONProtocolFactoryType, that creates TProtocolFactory that produces TJSONProtocols.
+
+For example, the following instance `ParsimoniousConfig`, specifies `k` and `v` for key-value fields when mapping 
+Thrift map collection in which the key is not a type of string. Also, thrift protocol will be the type of 
+`TBinaryProtocol`: 
+
+```scala
+import com.github.anskarl.parsimonious.common._
+
+implicit val config = ParsimoniousConfig(
+  keyName = "k",
+  valueName = "v",
+  protocolFactoryType = TBinaryProtocolFactoryType
+)
+```
 
 ## Dependencies
 
 Version variants published in `oss.sonatype.org`
- - scala_version: `2.12`, `2.13`
- - thrift_version: `thrift_0.10`, `thrift_0.13`
- - spark_profile: `spark2` (i.e., 2.4.x), `spark3` (i.e., 3.1.x)
- - flink_profile: `flink1_13`, `flink1_14` and `flink1_15`
- - parsimonious_version: e.g., `0.4.0`
+
+  - scala_version: `2.12`, `2.13`
+  - thrift_version: `thrift_0.10`, `thrift_0.13`
+  - spark_profile: `spark2` (i.e., 2.4.x), `spark3` (i.e., 3.1.x)
+  - flink_profile: `flink1_13`, `flink1_14` and `flink1_15`
+  - parsimonious_version: e.g., `0.4.0`
 
 #### Maven
 
@@ -471,7 +526,6 @@ Version variants published in `oss.sonatype.org`
 </dependency>
 ```
 
-
 #### SBT
 
 See the [official docs](https://www.scala-sbt.org/1.x/docs/Resolvers.html) to configure Sonatype (snapshots) 
@@ -514,6 +568,7 @@ resolvers += Resolver.sonatypeRepo("public") //  (or “snapshots”, “release
 ## Build from sources
 
 To build parsimonious from sources you will need an SBT version 1.6+. The build can be parameterized for the following environment variables:
+
   - `THRIFT_VERSION`: e.g., 0.13.0. Default is `0.10.0`. Please note that for Scrooge modules is always version `0.10.0`.
   - `SPARK_PROFILE`: can be either `spark2` or `spark3` (default is `spark3`).
     * In `spark2` parsimonious is build for Spark v2.4.6, Hadoop v2.10.0 and Parquet v1.10.1.

@@ -5,7 +5,7 @@ import com.twitter.scrooge.ThriftStruct
 import org.apache.flink.api.common.ExecutionConfig
 import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.api.common.typeutils.TypeSerializer
-import com.github.anskarl.parsimonious.common.{ParsimoniousConfig, TCompactProtocolFactoryType, TProtocolFactoryType}
+import com.github.anskarl.parsimonious.common.{ParsimoniousConfig, TProtocolFactoryType}
 
 
 case class ScroogeTypeInformation[T <: ThriftStruct](

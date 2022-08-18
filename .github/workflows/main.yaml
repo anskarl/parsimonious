@@ -25,16 +25,22 @@ jobs:
             ~/.ivy2/cache
             ~/.sbt
           key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt') }}
-      - name: Build parsimonious-spark-commons (Thrift ${{ matrix.thrift_version }})
+      - name: Build spark-commons (Thrift ${{ matrix.thrift_version }})
         run: THRIFT_VERSION=${{ matrix.thrift_version }} sbt build-spark-commons
-      - name: Build parsimonious-commons (Thrift ${{ matrix.thrift_version }})
-        run: THRIFT_VERSION=${{ matrix.thrift_version }} sbt build-commons
-      - name: Build parsimonious-jackson (Thrift ${{ matrix.thrift_version }})
-        run: THRIFT_VERSION=${{ matrix.thrift_version }} sbt build-jackson
-      - name: Build parsimonious-spark (Thrift ${{ matrix.thrift_version }}, Spark 2.4)
-        run: THRIFT_VERSION=${{ matrix.thrift_version }} SPARK_PROFILE=spark2 sbt build-spark
-      - name: Build parsimonious-spark (Thrift ${{ matrix.thrift_version }}, Spark 3.2)
-        run: THRIFT_VERSION=${{ matrix.thrift_version }} SPARK_PROFILE=spark3 sbt build-spark
+      - name: Build thrift-commons (Thrift ${{ matrix.thrift_version }})
+        run: THRIFT_VERSION=${{ matrix.thrift_version }} sbt build-thrift-commons
+      - name: Build thrift-jackson (Thrift ${{ matrix.thrift_version }})
+        run: THRIFT_VERSION=${{ matrix.thrift_version }} sbt build-thrift-jackson
+      - name: Build thrift-spark (Thrift ${{ matrix.thrift_version }}, Spark 2.4)
+        run: THRIFT_VERSION=${{ matrix.thrift_version }} SPARK_PROFILE=spark2 sbt build-thrift-spark
+      - name: Build thrift-spark (Thrift ${{ matrix.thrift_version }}, Spark 3.2)
+        run: THRIFT_VERSION=${{ matrix.thrift_version }} SPARK_PROFILE=spark3 sbt build-thrift-spark
+      - name: Build thrift-flink (Thrift ${{ matrix.thrift_version }}, Flink 1.13)
+        run: THRIFT_VERSION=${{ matrix.thrift_version }} FLINK_PROFILE=flink1_13 sbt build-thrift-flink
+      - name: Build thrift-flink (Thrift ${{ matrix.thrift_version }}, Flink 1.14)
+        run: THRIFT_VERSION=${{ matrix.thrift_version }} FLINK_PROFILE=flink1_14 sbt build-thrift-flink
+      - name: Build thrift-flink (Thrift ${{ matrix.thrift_version }}, Flink 1.15)
+        run: THRIFT_VERSION=${{ matrix.thrift_version }} FLINK_PROFILE=flink1_15 sbt build-thrift-flink
     env:
       GITHUB_TOKEN: ${{ github.token }}
   build_scrooge_modules:
@@ -56,13 +62,19 @@ jobs:
             ~/.ivy2/cache
             ~/.sbt
           key: ${{ runner.os }}-sbt-${{ hashFiles('**/build.sbt') }}
-      - name: Build parsimonious-scrooge-commons
+      - name: Build scrooge-commons
         run: THRIFT_VERSION=0.10.0 sbt build-scrooge-commons
-      - name: Build parsimonious-scrooge-jackson
+      - name: Build scrooge-jackson
         run: THRIFT_VERSION=0.10.0 sbt build-scrooge-jackson
-      - name: Build parsimonious-scrooge-spark (Spark 2.4)
+      - name: Build scrooge-spark (Spark 2.4)
         run: THRIFT_VERSION=0.10.0 SPARK_PROFILE=spark2 sbt build-scrooge-spark
-      - name: Build parsimonious-scrooge-spark (Spark 3.2)
+      - name: Build scrooge-spark (Spark 3.2)
         run: THRIFT_VERSION=0.10.0 SPARK_PROFILE=spark3 sbt build-scrooge-spark
+      - name: Build scrooge-flink (Flink 1.13)
+        run:  FLINK_PROFILE=flink1_13 sbt build-scrooge-flink
+      - name: Build scrooge-flink (Flink 1.14)
+        run: FLINK_PROFILE=flink1_14 sbt build-scrooge-flink
+      - name: Build scrooge-flink (Flink 1.15)
+        run: FLINK_PROFILE=flink1_15 sbt build-scrooge-flink
     env:
       GITHUB_TOKEN: ${{ github.token }}

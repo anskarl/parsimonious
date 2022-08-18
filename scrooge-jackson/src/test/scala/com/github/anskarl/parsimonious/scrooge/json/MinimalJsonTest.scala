@@ -3,10 +3,12 @@ package com.github.anskarl.parsimonious.scrooge.json
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import com.github.anskarl.parsimonious.common.ParsimoniousConfig
 import com.github.anskarl.parsimonious.scrooge.models._
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 import com.github.anskarl.parsimonious.scrooge._
+
 import java.nio.ByteBuffer
 import scala.collection.JavaConverters._
 import scala.util.chaining.scalaUtilChainingOps
@@ -82,7 +84,7 @@ class MinimalJsonTest extends AnyWordSpecLike with Matchers {
 
 
   private val sampleNestedDummy = NestedDummy(reqStr = "required 101", basic = sampleBasicDummy)
-  private implicit val scroogeConfig: ScroogeConfig = ScroogeConfig()
+  private implicit val parsimoniousConfig: ParsimoniousConfig = ParsimoniousConfig()
 
   "Basic encode/decode functionality" should {
     "encode/decode Thrift class to Json" in {

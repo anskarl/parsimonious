@@ -1,12 +1,12 @@
 package com.github.anskarl.parsimonious.scrooge.spark
 
+import com.github.anskarl.parsimonious.common.ParsimoniousConfig
 import com.github.anskarl.parsimonious.scrooge._
 import com.twitter.scrooge._
 import org.apache.spark.sql.Row
 import org.apache.thrift.protocol.TType
 
 import java.nio.ByteBuffer
-import scala.reflect.ClassTag
 import scala.reflect.runtime.{universe => ru}
 
 object RowScroogeConverter {
@@ -14,7 +14,7 @@ object RowScroogeConverter {
   def convert[T <: ThriftStruct with Product: ru.TypeTag](
     structClass: Class[T],
     row: Row
-  )(implicit unionBuilders: UnionBuilders, scroogeConfig: ScroogeConfig = ScroogeConfig()): T ={
+  )(implicit unionBuilders: UnionBuilders, parsimoniousConfig: ParsimoniousConfig = ParsimoniousConfig()): T ={
     val codec = com.twitter.scrooge.ThriftStructCodec.forStructClass(structClass)
     convertWithCodec(codec,row)
   }
@@ -22,7 +22,7 @@ object RowScroogeConverter {
   def convertWithCodec[T <: ThriftStruct with Product: ru.TypeTag](
     codec: ThriftStructCodec[T],
     row: Row
-  )(implicit unionBuilders: UnionBuilders, scroogeConfig: ScroogeConfig = ScroogeConfig()): T ={
+  )(implicit unionBuilders: UnionBuilders, parsimoniousConfig: ParsimoniousConfig = ParsimoniousConfig()): T ={
 
     val isUnion = codec.metaData.unionFields.nonEmpty
 
@@ -31,7 +31,7 @@ object RowScroogeConverter {
   }
 
   private def convertUnion[T <: ThriftStruct: ru.TypeTag](row: Row, codec: ThriftStructCodec[T])
-    (implicit unionBuilders: UnionBuilders, scroogeConfig: ScroogeConfig): T = {
+    (implicit unionBuilders: UnionBuilders, parsimoniousConfig: ParsimoniousConfig): T = {
     val unionFields = codec.metaData.unionFields
 
     val (fieldName, index) = row.schema.fieldNames.zipWithIndex
@@ -47,7 +47,7 @@ object RowScroogeConverter {
   }
 
   private def convertStruct[T <: ThriftStruct with Product](row: Row, codecWithBuilder: ThriftStructCodec[T] with StructBuilderFactory[T])
-    (implicit unionBuilders: UnionBuilders, scroogeConfig: ScroogeConfig): T = {
+    (implicit unionBuilders: UnionBuilders, parsimoniousConfig: ParsimoniousConfig): T = {
     val fieldInfos: Seq[ThriftStructFieldInfo] = ScroogeHelpers.getFieldInfos(codecWithBuilder)
     val builder = codecWithBuilder.newBuilder()
 
@@ -64,7 +64,7 @@ object RowScroogeConverter {
   }
 
   private def convertRowElmToScroogeElm(elm: Any, fieldInfo: ThriftStructFieldInfo, codec: ThriftStructCodec[_])
-    (implicit unionBuilders: UnionBuilders, scroogeConfig: ScroogeConfig): Any = {
+    (implicit unionBuilders: UnionBuilders, parsimoniousConfig: ParsimoniousConfig): Any = {
     val fieldType = fieldInfo.tfield.`type`
 
     fieldType match {
@@ -151,7 +151,7 @@ object RowScroogeConverter {
     seq: Seq[Any],
     fieldInfo: ThriftStructFieldInfo,
     codec: ThriftStructCodec[_]
-  )(implicit unionBuilders: UnionBuilders, scroogeConfig: ScroogeConfig): Seq[Any] = seq.map(convertRowElmToScroogeElm(_, fieldInfo, codec))
+  )(implicit unionBuilders: UnionBuilders, parsimoniousConfig: ParsimoniousConfig): Seq[Any] = seq.map(convertRowElmToScroogeElm(_, fieldInfo, codec))
 
   implicit class RichFieldInfo(val fieldInfo: ThriftStructFieldInfo) extends AnyVal{
     def convert(value: Any): Any =

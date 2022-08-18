@@ -1,6 +1,7 @@
 package com.github.anskarl.parsimonious.scrooge.json
 
-import com.github.anskarl.parsimonious.scrooge.{DummyScroogeGenerators, ScroogeConfig, UnionBuilders}
+import com.github.anskarl.parsimonious.common.ParsimoniousConfig
+import com.github.anskarl.parsimonious.scrooge.{DummyScroogeGenerators, UnionBuilders}
 import com.github.anskarl.parsimonious.scrooge.models._
 import org.scalacheck.Gen
 import org.scalacheck.Prop.forAll
@@ -9,7 +10,7 @@ import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.scalacheck.Checkers
 
 class ScroogeJsonConversionsTest extends AnyWordSpecLike with Matchers with Checkers with DummyScroogeGenerators {
-  private implicit val scroogeConfig: ScroogeConfig = ScroogeConfig()
+  private implicit val parsimoniousConfig: ParsimoniousConfig = ParsimoniousConfig()
   
   "Json <> Scrooge converters" should {
     "encode/decode Scrooge Thrift generated classes to Json" in {

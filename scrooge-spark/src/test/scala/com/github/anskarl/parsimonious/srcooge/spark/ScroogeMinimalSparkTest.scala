@@ -1,6 +1,7 @@
 package com.github.anskarl.parsimonious.srcooge.spark
 
-import com.github.anskarl.parsimonious.scrooge.{ScroogeConfig, UnionBuilders}
+import com.github.anskarl.parsimonious.common.ParsimoniousConfig
+import com.github.anskarl.parsimonious.scrooge.UnionBuilders
 import com.github.anskarl.parsimonious.scrooge.models._
 import com.github.anskarl.parsimonious.scrooge.spark.{RowScroogeConverter, ScroogeRowConverter}
 import com.github.anskarl.parsimonious.spark.SparkSessionTestSuite
@@ -69,7 +70,7 @@ class ScroogeMinimalSparkTest extends AnyWordSpecLike with SparkSessionTestSuite
     decoded mustEqual instance
   }
 
-  private implicit val scroogeConfig: ScroogeConfig = ScroogeConfig()
+  private implicit val parsimoniousConfig: ParsimoniousConfig = ParsimoniousConfig()
 
   "Scrooge - Basic encode/decode functionality" should {
     "encode/decode Basic Scrooge class to Spark Rows" in {

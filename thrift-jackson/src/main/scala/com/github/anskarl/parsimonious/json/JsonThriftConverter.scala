@@ -1,12 +1,13 @@
 package com.github.anskarl.parsimonious.json
 
 import com.fasterxml.jackson.core.Base64Variants
-import com.github.anskarl.parsimonious.{ClassTBaseType, TBaseType, ThriftConfig, UnsafeThriftHelpers}
-import org.apache.thrift.{TBase, TDeserializer, TFieldIdEnum}
+import com.github.anskarl.parsimonious.{ClassTBaseType, TBaseType, UnsafeThriftHelpers}
+import org.apache.thrift.{TBase, TFieldIdEnum}
 import org.apache.thrift.meta_data.{FieldMetaData, FieldValueMetaData, ListMetaData, MapMetaData, SetMetaData, StructMetaData}
-import org.apache.thrift.protocol.{TCompactProtocol, TType}
+import org.apache.thrift.protocol.TType
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node
+import com.github.anskarl.parsimonious.common.ParsimoniousConfig
 
 import java.nio.ByteBuffer
 import scala.collection.JavaConverters._
@@ -20,7 +21,7 @@ object JsonThriftConverter {
   def convert[T <: TBaseType](
     tbaseClass: Class[T],
     jsonNode: JsonNode
-  )(implicit thriftConfig: ThriftConfig = ThriftConfig()): T =
+  )(implicit parsimoniousConfig: ParsimoniousConfig = ParsimoniousConfig()): T =
     convertJsonNodeToThriftGeneric(
       tbaseClass         = tbaseClass.asInstanceOf[ClassTBaseType],
       jsonNode                = jsonNode
@@ -30,7 +31,7 @@ object JsonThriftConverter {
     tbaseClass: ClassTBaseType,
     jsonNode: JsonNode,
     typeDefClasses: Map[String, ClassTBaseType] = Map.empty
-  )(implicit thriftConfig: ThriftConfig): TBaseType = {
+  )(implicit parsimoniousConfig: ParsimoniousConfig): TBaseType = {
 
     val fieldMeta = UnsafeThriftHelpers
       .getStructMetaDataMap(tbaseClass)
@@ -63,7 +64,7 @@ object JsonThriftConverter {
     seq: node.ArrayNode,
     innerElmMeta: FieldValueMetaData,
     typeDefClasses: Map[String, ClassTBaseType]
-  )(implicit thriftConfig: ThriftConfig): Seq[Any] =
+  )(implicit parsimoniousConfig: ParsimoniousConfig): Seq[Any] =
     seq.iterator().asScala.map(Option(_)).map(_.map(convertJsonElmToJavaElm(_, innerElmMeta, typeDefClasses)).orNull).toSeq
 
 
@@ -74,7 +75,7 @@ object JsonThriftConverter {
     elm: Any,
     meta: FieldValueMetaData,
     typeDefClasses: Map[String, ClassTBaseType]
-  )(implicit thriftConfig: ThriftConfig): Any = {
+  )(implicit parsimoniousConfig: ParsimoniousConfig): Any = {
 
     if (meta.isBinary) {
       val decoded = Base64Variants
@@ -119,8 +120,8 @@ object JsonThriftConverter {
           val arrayNode = elm.asInstanceOf[node.ArrayNode]
 
           arrayNode.asScala.map{ element =>
-            val keyNode = element.get(thriftConfig.keyName)
-            val valueNode = element.get(thriftConfig.valName)
+            val keyNode = element.get(parsimoniousConfig.keyName)
+            val valueNode = element.get(parsimoniousConfig.valName)
 
             val key = convertJsonElmToJavaElm(keyNode,mapMeta.keyMetaData,typeDefClasses)
             val value = convertJsonElmToJavaElm(valueNode,mapMeta.valueMetaData,typeDefClasses)

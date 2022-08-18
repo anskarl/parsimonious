@@ -1,6 +1,7 @@
 package com.github.anskarl.parsimonious.spark
 
 import com.github.anskarl.parsimonious._
+import com.github.anskarl.parsimonious.common.ParsimoniousConfig
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 import org.apache.thrift.meta_data._
@@ -18,7 +19,7 @@ object ThriftRowConverter {
     */
   def convert[F <: TFieldIdEnum : ClassTag](
     instance: TBase[_ <: TBase[_, _], F]
-  )(implicit thriftConfig: ThriftConfig = ThriftConfig()): Row = {
+  )(implicit parsimoniousConfig: ParsimoniousConfig = ParsimoniousConfig()): Row = {
 
     val fieldMeta = FieldMetaData
       .getStructMetaDataMap(instance.getClass.asInstanceOf[Class[_ <: TBase[_, _]]])
@@ -43,7 +44,7 @@ object ThriftRowConverter {
   /**
     * Extracts schema (i.e., Spark SQL [[StructType]]) from a class of [[TBaseType]]
     */
-  def extractSchema(tbaseClass: ClassTBaseType)(implicit thriftConfig: ThriftConfig = ThriftConfig()): StructType = {
+  def extractSchema(tbaseClass: ClassTBaseType)(implicit parsimoniousConfig: ParsimoniousConfig = ParsimoniousConfig()): StructType = {
 
     val fieldMeta = FieldMetaData
       .getStructMetaDataMap(tbaseClass.asInstanceOf[Class[_ <: TBase[_, _]]])
@@ -68,7 +69,7 @@ object ThriftRowConverter {
     * Converts a Java element to a [[Row]] element
     */
   private def convertJavaElmToRowElm(elm: Any, elmMeta: FieldValueMetaData)
-    (implicit thriftConfig: ThriftConfig): Any = {
+    (implicit parsimoniousConfig: ParsimoniousConfig): Any = {
     if (elmMeta.isBinary) elm match {
       case elmByteArray: Array[Byte] => elmByteArray
       case elmByteBuffer: ByteBuffer => elmByteBuffer.array()
@@ -101,7 +102,7 @@ object ThriftRowConverter {
       case TType.STRUCT => elmMeta match {
         case _: StructMetaData => convert(elm.asInstanceOf[TBaseType])
         // If we've recursed on a struct, thrift returns a TType.Struct with non StructMetaData. We serialize to bytes
-        case _ => thriftConfig.protocolSerializer.serialize(elm.asInstanceOf[TBase[_, _]])
+        case _ => parsimoniousConfig.protocolSerializer.serialize(elm.asInstanceOf[TBase[_, _]])
       }
       // Base Cases
       case TType.ENUM => elm.toString
@@ -120,7 +121,7 @@ object ThriftRowConverter {
   /**
     * Converts a Thrift field to a Spark SQL [[DataType]].
     */
-  private def convertThriftFieldToDataType(meta: FieldValueMetaData)(implicit thriftConfig: ThriftConfig): DataType = {
+  private def convertThriftFieldToDataType(meta: FieldValueMetaData)(implicit parsimoniousConfig: ParsimoniousConfig): DataType = {
 
     if (meta.isBinary) BinaryType else meta.`type` match {
       // Recursive Cases
@@ -144,7 +145,7 @@ object ThriftRowConverter {
         if (isPrimitive(mapMetaData.keyMetaData))
           MapType(keyDataType, valueDataType)
         else ArrayType(
-          StructType(Seq(StructField(thriftConfig.keyName, keyDataType), StructField(thriftConfig.valName, valueDataType))),
+          StructType(Seq(StructField(parsimoniousConfig.keyName, keyDataType), StructField(parsimoniousConfig.valName, valueDataType))),
           containsNull = false
         )
 
@@ -173,7 +174,7 @@ object ThriftRowConverter {
   private def convertJavaElmSeqToRowElmSeq(
     seq: Seq[Any],
     innerElmMeta: FieldValueMetaData
-  )(implicit thriftConfig: ThriftConfig): Seq[Any] =
+  )(implicit parsimoniousConfig: ParsimoniousConfig): Seq[Any] =
     seq.map(Option(_)).map(_.map(convertJavaElmToRowElm(_, innerElmMeta)).orNull)
 
 }

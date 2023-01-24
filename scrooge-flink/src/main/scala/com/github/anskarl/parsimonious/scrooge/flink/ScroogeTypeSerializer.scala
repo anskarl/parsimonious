@@ -40,6 +40,6 @@ case class ScroogeTypeSerializer[T <: ThriftStruct](
   override def copy(source: DataInputView, target: DataOutputView): Unit =
     this.serialize(deserialize(source), target)
 
-  override def snapshotConfiguration(): TypeSerializerSnapshot[T] = ScroogeTypeSerializerSnapshot(structClass, protocolFactoryType)
+  override def snapshotConfiguration(): TypeSerializerSnapshot[T] = new ScroogeTypeSerializerSnapshot(structClass, protocolFactoryType)
 
 }

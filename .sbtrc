@@ -36,6 +36,8 @@ alias publish-scrooge-jackson = ;+scrooge-jackson/publishSigned
 
 alias publish-thrift-spark = ;+thrift-spark/publishSigned
 
+alias publish-flink-commons = ;flink-commons/publishSigned
+
 alias publish-thrift-flink = ;thrift-flink/publishSigned
 
 alias publish-scrooge-spark = ;+scrooge-spark/publishSigned

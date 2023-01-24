@@ -8,7 +8,7 @@ object Dependencies {
         final val Hadoop2 = "2.10.0"
         final val Parquet10 = "1.10.1"
 
-        final val Spark3 = "3.2.0"
+        final val Spark3 = "3.1.2"
         final val Hadoop3 = "3.3.1"
         final val Parquet12 = "1.12.2"
 

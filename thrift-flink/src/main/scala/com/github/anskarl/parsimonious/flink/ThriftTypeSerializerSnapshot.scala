@@ -6,6 +6,7 @@ import org.apache.flink.core.memory.{DataInputView, DataOutputView}
 import org.apache.flink.util.InstantiationUtil
 import com.github.anskarl.parsimonious.common.TProtocolFactoryType
 
+//todo: this should have a default constructor like ScroogeTypeSerializerSnapshot
 class ThriftTypeSerializerSnapshot[T <: TBaseType](
     tbaseClass: Class[T],
     protocolFactoryType: TProtocolFactoryType

@@ -573,7 +573,7 @@ To build parsimonious from sources you will need an SBT version 1.6+. The build 
   - `THRIFT_VERSION`: e.g., 0.13.0. Default is `0.10.0`. Please note that for Scrooge modules is always version `0.10.0`.
   - `SPARK_PROFILE`: can be either `spark2` or `spark3` (default is `spark3`).
     * In `spark2` parsimonious is build for Spark v2.4.6, Hadoop v2.10.0 and Parquet v1.10.1.
-    * In `spark3` parsimonious is build for Spark v3.2.0, Hadoop v3.3.1 and Parquet v1.12.2.
+    * In `spark3` parsimonious is build for Spark v3.1.2, Hadoop v3.3.1 and Parquet v1.12.2.
   - `FLINK_PROFILE`: can be one of `flink1_13`,`flink1_14` and `flink1_15`
 
 For all variants of `THRIFT_VERSION` and `SPARK_PROFILE`, parsimonious can be cross-build for Scala 2.12 and 2.13.

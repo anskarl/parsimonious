@@ -1,6 +1,6 @@
 package com.github.anskarl.parsimonious.scrooge.flink
 
-import com.github.anskarl.parsimonious.common.{ParsimoniousConfig, TProtocolFactoryType}
+import com.github.anskarl.parsimonious.common.{ParsimoniousConfig, TCompactProtocolFactoryType}
 import com.github.anskarl.parsimonious.flink.common.ThriftFlinkSerdeHelpers
 import com.github.anskarl.parsimonious.scrooge.{ByteArrayThriftDecoder, ByteArrayThriftEncoder}
 import com.twitter.scrooge.{ThriftStruct, ThriftStructCodec}
@@ -8,16 +8,14 @@ import org.apache.flink.api.common.typeutils.{TypeSerializer, TypeSerializerSnap
 import org.apache.flink.core.memory.{DataInputView, DataOutputView}
 
 
-case class ScroogeTypeSerializer[T <: ThriftStruct](
-  structClass: Class[T],
-  protocolFactoryType: TProtocolFactoryType
-  ) extends TypeSerializer[T] {
+case class ScroogeTypeSerializer[T <: ThriftStruct](structClass: Class[T]) extends TypeSerializer[T] {
 
   @transient private lazy val codec = ThriftStructCodec.forStructClass(structClass)
-  @transient private implicit lazy val parsimoniousConfig: ParsimoniousConfig = ParsimoniousConfig(protocolFactoryType = protocolFactoryType)
+  @transient private implicit lazy val parsimoniousConfig: ParsimoniousConfig =
+    ParsimoniousConfig(protocolFactoryType = TCompactProtocolFactoryType)
   
   override def isImmutableType: Boolean = true
-  override def duplicate(): TypeSerializer[T] = ScroogeTypeSerializer(structClass, protocolFactoryType)
+  override def duplicate(): TypeSerializer[T] = ScroogeTypeSerializer(structClass)
   override def createInstance(): T = codec.metaData.structClass.getDeclaredConstructor().newInstance()
 
   override def copy(from: T): T = from
@@ -40,6 +38,6 @@ case class ScroogeTypeSerializer[T <: ThriftStruct](
   override def copy(source: DataInputView, target: DataOutputView): Unit =
     this.serialize(deserialize(source), target)
 
-  override def snapshotConfiguration(): TypeSerializerSnapshot[T] = new ScroogeTypeSerializerSnapshot(structClass, protocolFactoryType)
+  override def snapshotConfiguration(): TypeSerializerSnapshot[T] = new ScroogeTypeSerializerSnapshot(structClass)
 
 }

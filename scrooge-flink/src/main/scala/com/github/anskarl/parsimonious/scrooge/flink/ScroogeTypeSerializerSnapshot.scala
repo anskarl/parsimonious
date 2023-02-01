@@ -11,14 +11,9 @@ class ScroogeTypeSerializerSnapshot[T <: ThriftStruct]() extends TypeSerializerS
   @transient private var _codec: ThriftStructCodec[T] = _
   @transient private var _structClass: Class[T] = _
 
-  //todo: either use a global config or switch to a default protocol factory
-  @transient private var _protocolFactoryType: TProtocolFactoryType = _
-
-  def this(structClass: Class[T],
-           protocolFactoryType: TProtocolFactoryType) ={
+  def this(structClass: Class[T]) ={
     this()
     _structClass = structClass
-    _protocolFactoryType = protocolFactoryType
     _codec = ThriftStructCodec.forStructClass(structClass)
   }
 
@@ -28,11 +23,9 @@ class ScroogeTypeSerializerSnapshot[T <: ThriftStruct]() extends TypeSerializerS
   override def readSnapshot(readVersion: Int, in: DataInputView, userCodeClassLoader: ClassLoader): Unit = {
     val _structClass = InstantiationUtil.resolveClassByName[T](in, userCodeClassLoader)
     _codec = ThriftStructCodec.forStructClass(_structClass)
-
-    _protocolFactoryType = TCompactProtocolFactoryType
   }
 
-  override def restoreSerializer(): TypeSerializer[T] = ScroogeTypeSerializer(_structClass, _protocolFactoryType)
+  override def restoreSerializer(): TypeSerializer[T] = ScroogeTypeSerializer(_structClass)
 
   override def resolveSchemaCompatibility(newSerializer: TypeSerializer[T]): TypeSerializerSchemaCompatibility[T] =
     TypeSerializerSchemaCompatibility.compatibleAsIs()

@@ -1,7 +1,7 @@
 package com.github.anskarl.parsimonious.flink
 
 import com.github.anskarl.parsimonious.TBaseType
-import com.github.anskarl.parsimonious.common.TProtocolFactoryType
+import com.github.anskarl.parsimonious.common.{TCompactProtocolFactoryType, TProtocolFactoryType}
 import com.github.anskarl.parsimonious.flink.common.ThriftFlinkSerdeHelpers
 import org.apache.flink.api.common.typeutils.{TypeSerializer, TypeSerializerSnapshot}
 import org.apache.flink.core.memory.{DataInputView, DataOutputView}
@@ -9,14 +9,13 @@ import org.apache.thrift.{TBase, TDeserializer, TSerializer}
 
 case class ThriftTypeSerializer[T <: TBaseType](
     tbaseClass: Class[T],
-    protocolFactoryType: TProtocolFactoryType
   ) extends TypeSerializer[T] {
 
-  @transient private lazy val protocolSerializer: TSerializer = new TSerializer(protocolFactoryType.create())
-  @transient private lazy val protocolDeserializer: TDeserializer = new TDeserializer(protocolFactoryType.create())
+  @transient private lazy val protocolSerializer: TSerializer = new TSerializer(TCompactProtocolFactoryType.create())
+  @transient private lazy val protocolDeserializer: TDeserializer = new TDeserializer(TCompactProtocolFactoryType.create())
 
   override def isImmutableType: Boolean = false
-  override def duplicate(): TypeSerializer[T] = ThriftTypeSerializer(tbaseClass, protocolFactoryType)
+  override def duplicate(): TypeSerializer[T] = ThriftTypeSerializer(tbaseClass)
   override def createInstance(): T = tbaseClass.getConstructor().newInstance()
 
   override def copy(from: T): T = from.deepCopy().asInstanceOf[T]
@@ -39,6 +38,6 @@ case class ThriftTypeSerializer[T <: TBaseType](
 
   override def copy(source: DataInputView, target: DataOutputView): Unit = this.serialize(deserialize(source), target)
 
-  override def snapshotConfiguration(): TypeSerializerSnapshot[T] = new ThriftTypeSerializerSnapshot(tbaseClass, protocolFactoryType)
+  override def snapshotConfiguration(): TypeSerializerSnapshot[T] = new ThriftTypeSerializerSnapshot(tbaseClass)
 
 }

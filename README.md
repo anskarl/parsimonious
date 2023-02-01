@@ -441,9 +441,10 @@ The parameters are the following:
   `ParsimoniousConfig` class.
   - You can also change the serialization protocol by specifying the `TProtocolFactoryType` in field 
   `protocolFactoryType`.  _Parsimonious_ supports the following protocols:
-    1. TCompactProtocolFactoryType (default), that creates TProtocolFactory that produces TCompactProtocols.
-    2. TBinaryProtocolFactoryType, that creates TProtocolFactory that produces TBinaryProtocols.
-    3. TJSONProtocolFactoryType, that creates TProtocolFactory that produces TJSONProtocols.
+    1. `TCompactProtocolFactoryType` (default), that creates TProtocolFactory that produces TCompactProtocols.
+    2. `TBinaryProtocolFactoryType`, that creates TProtocolFactory that produces TBinaryProtocols.
+    3. `TJSONProtocolFactoryType`, that creates TProtocolFactory that produces TJSONProtocols.
+  - **IMPORTANT NOTE**: For Flink state serializers, Parsimonious ignores the `protocolFactoryType` and uses only `TCompactProtocolFactoryType`.
 
 For example, the following instance `ParsimoniousConfig`, specifies `k` and `v` for key-value fields when mapping 
 Thrift map collection in which the key is not a type of string. Also, thrift protocol will be the type of 

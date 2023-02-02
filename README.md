@@ -475,8 +475,8 @@ Version variants published in `oss.sonatype.org`
 ***thrift-jackson***:
 ```
 <dependency>
-  <groupId>com.github.anskarl.parsimonious</groupId>
-  <artifactId>thrift-jackson_[scala_version]</artifactId>
+  <groupId>com.github.anskarl</groupId>
+  <artifactId>parsimonious-thrift-jackson_[scala_version]</artifactId>
   <version>[thrift_version]-[parsimonious_version]</version>
 </dependency>
 ```
@@ -484,8 +484,8 @@ Version variants published in `oss.sonatype.org`
 ***thrift-spark***:
 ```
 <dependency>
-  <groupId>com.github.anskarl.parsimonious</groupId>
-  <artifactId>thrift-spark_[scala_version]</artifactId>
+  <groupId>com.github.anskarl</groupId>
+  <artifactId>parsimonious-thrift-spark_[scala_version]</artifactId>
   <version>[thrift_version]_[spark_profile]-[parsimonious_version]</version>
 </dependency>
 ```
@@ -493,8 +493,8 @@ Version variants published in `oss.sonatype.org`
 ***scrooge-jackson***:
 ```
 <dependency>
-  <groupId>com.github.anskarl.parsimonious</groupId>
-  <artifactId>scrooge-jackson_[scala_version]</artifactId>
+  <groupId>com.github.anskarl</groupId>
+  <artifactId>parsimonious-scrooge-jackson_[scala_version]</artifactId>
   <version>[thrift_version]-[parsimonious_version]</version>
 </dependency>
 ```
@@ -502,8 +502,8 @@ Version variants published in `oss.sonatype.org`
 ***scrooge-spark***:
 ```
 <dependency>
-  <groupId>com.github.anskarl.parsimonious</groupId>
-  <artifactId>scrooge-spark_[scala_version]</artifactId>
+  <groupId>com.github.anskarl</groupId>
+  <artifactId>parsimonious-scrooge-spark_[scala_version]</artifactId>
   <version>[thrift_version]_[spark_profile]-[parsimonious_version]</version>
 </dependency>
 ```
@@ -511,8 +511,8 @@ Version variants published in `oss.sonatype.org`
 ***thrift-flink***:
 ```
 <dependency>
-  <groupId>com.github.anskarl.parsimonious</groupId>
-  <artifactId>thrift-flink_2.12</artifactId>
+  <groupId>com.github.anskarl</groupId>
+  <artifactId>parsimonious-thrift-flink_2.12</artifactId>
   <version>[thrift_version]_[flink_profile]-[parsimonious_version]</version>
 </dependency>
 ```
@@ -521,8 +521,8 @@ Version variants published in `oss.sonatype.org`
 ***scrooge-flink***:
 ```
 <dependency>
-  <groupId>com.github.anskarl.parsimonious</groupId>
-  <artifactId>scrooge-flink_2.12</artifactId>
+  <groupId>com.github.anskarl</groupId>
+  <artifactId>parsimonious-scrooge-flink_2.12</artifactId>
   <version>[thrift_version]_[flink_profile]-[parsimonious_version]</version>
 </dependency>
 ```
@@ -537,32 +537,32 @@ resolvers += Resolver.sonatypeRepo("public") //  (or “snapshots”, “release
 
 ***thrift-jackson***:
 ```
-"com.github.anskarl.parsimonious" %% "thrift-jackson" % "[thrift_version]-[parsimonious_version]"
+"com.github.anskarl" %% "parsimonious-thrift-jackson" % "[thrift_version]-[parsimonious_version]"
 ```
 
 ***thrift-spark***:
 ```
-"com.github.anskarl.parsimonious" %% "thrift-spark" % "[thrift_version]_[spark_profile]-[parsimonious_version]"
+"com.github.anskarl" %% "parsimonious-thrift-spark" % "[thrift_version]_[spark_profile]-[parsimonious_version]"
 ```
 
 ***scrooge-jackson***:
 ```
-"com.github.anskarl.parsimonious" %% "scrooge-jackson" % "[thrift_version]-[parsimonious_version]"
+"com.github.anskarl" %% "parsimonious-scrooge-jackson" % "[thrift_version]-[parsimonious_version]"
 ```
 
 ***scrooge-spark***:
 ```
-"com.github.anskarl.parsimonious" %% "scrooge-spark" % "[thrift_version]_[spark_profile]-[parsimonious_version]"
+"com.github.anskarl" %% "parsimonious-scrooge-spark" % "[thrift_version]_[spark_profile]-[parsimonious_version]"
 ```
 
 ***thrift-flink***:
 ```
-"com.github.anskarl.parsimonious" % "thrift-flink_2.12" % "[thrift_version]_[flink_profile]-[parsimonious_version]"
+"com.github.anskarl" % "parsimonious-thrift-flink_2.12" % "[thrift_version]_[flink_profile]-[parsimonious_version]"
 ```
 
 ***scrooge-flink***:
 ```
-"com.github.anskarl.parsimonious" % "scrooge-flink_2.12" % "[thrift_version]_[flink_profile]-[parsimonious_version]"
+"com.github.anskarl" % "parsimonious-scrooge-flink_2.12" % "[thrift_version]_[flink_profile]-[parsimonious_version]"
 ```
 
 

@@ -1,73 +1,73 @@
-alias build-commons = ;+commons/clean ;+commons/test ;+commons/package
+alias build-commons = ;+parsimonious-commons/clean ;+parsimonious-commons/test ;+parsimonious-commons/package
 
-alias build-thrift-commons = ;+thrift-commons/clean ;+thrift-commons/test ;+thrift-commons/package
+alias build-thrift-commons = ;+parsimonious-thrift-commons/clean ;+parsimonious-thrift-commons/test ;+parsimonious-thrift-commons/package
 
-alias build-spark-commons = ;+spark-commons/clean ;+spark-commons/test ;+spark-commons/package
+alias build-spark-commons = ;+parsimonious-spark-commons/clean ;+parsimonious-spark-commons/test ;+parsimonious-spark-commons/package
 
-alias build-scrooge-commons = ;+scrooge-commons/clean ;+scrooge-commons/test ;+scrooge-commons/package
+alias build-scrooge-commons = ;+parsimonious-scrooge-commons/clean ;+parsimonious-scrooge-commons/test ;+parsimonious-scrooge-commons/package
 
-alias build-flink-commons = ;flink-commons/clean ;flink-commons/test ;flink-commons/package
+alias build-flink-commons = ;parsimonious-flink-commons/clean ;parsimonious-flink-commons/test ;parsimonious-flink-commons/package
 
-alias build-thrift-jackson = ;+thrift-jackson/clean ;+thrift-jackson/test ;+thrift-jackson/package
+alias build-thrift-jackson = ;+parsimonious-thrift-jackson/clean ;+parsimonious-thrift-jackson/test ;+parsimonious-thrift-jackson/package
 
-alias build-scrooge-jackson = ;+scrooge-jackson/clean ;+scrooge-jackson/test ;+scrooge-jackson/package
+alias build-scrooge-jackson = ;+parsimonious-scrooge-jackson/clean ;+parsimonious-scrooge-jackson/test ;+parsimonious-scrooge-jackson/package
 
-alias build-thrift-spark = ;+thrift-spark/clean ;+thrift-spark/test ;+thrift-spark/package
+alias build-thrift-spark = ;+parsimonious-thrift-spark/clean ;+parsimonious-thrift-spark/test ;+parsimonious-thrift-spark/package
 
-alias build-thrift-flink = ;thrift-flink/clean ;thrift-flink/test ;thrift-flink/package
+alias build-thrift-flink = ;parsimonious-thrift-flink/clean ;parsimonious-thrift-flink/test ;parsimonious-thrift-flink/package
 
-alias build-scrooge-spark = ;+scrooge-spark/clean ;scrooge-spark/test ;+scrooge-spark/package
+alias build-scrooge-spark = ;+parsimonious-scrooge-spark/clean ;parsimonious-scrooge-spark/test ;+parsimonious-scrooge-spark/package
 
-alias build-scrooge-flink = ;scrooge-flink/clean ;scrooge-flink/test ;scrooge-flink/package
+alias build-scrooge-flink = ;parsimonious-scrooge-flink/clean ;parsimonious-scrooge-flink/test ;parsimonious-scrooge-flink/package
 
-alias publish-commons = ;+commons/publishSigned
+alias publish-commons = ;+parsimonious-commons/publishSigned
 
-alias publish-thrift-commons = ;+thrift-commons/publishSigned
+alias publish-thrift-commons = ;+parsimonious-thrift-commons/publishSigned
 
-alias publish-scrooge-commons = ;+scrooge-commons/publishSigned
+alias publish-scrooge-commons = ;+parsimonious-scrooge-commons/publishSigned
 
-alias publish-spark-commons = ;+spark-commons/publishSigned
+alias publish-spark-commons = ;+parsimonious-spark-commons/publishSigned
 
-alias publish-thrift-commons = ;thrift-commons/publishSigned
+alias publish-thrift-commons = ;parsimonious-thrift-commons/publishSigned
 
-alias publish-thrift-jackson = ;+thrift-jackson/publishSigned
+alias publish-thrift-jackson = ;+parsimonious-thrift-jackson/publishSigned
 
-alias publish-scrooge-jackson = ;+scrooge-jackson/publishSigned
+alias publish-scrooge-jackson = ;+parsimonious-scrooge-jackson/publishSigned
 
-alias publish-thrift-spark = ;+thrift-spark/publishSigned
+alias publish-thrift-spark = ;+parsimonious-thrift-spark/publishSigned
 
-alias publish-flink-commons = ;flink-commons/publishSigned
+alias publish-flink-commons = ;parsimonious-flink-commons/publishSigned
 
-alias publish-thrift-flink = ;thrift-flink/publishSigned
+alias publish-thrift-flink = ;parsimonious-thrift-flink/publishSigned
 
-alias publish-scrooge-spark = ;+scrooge-spark/publishSigned
+alias publish-scrooge-spark = ;+parsimonious-scrooge-spark/publishSigned
 
-alias publish-scrooge-flink = ;scrooge-flink/publishSigned
+alias publish-scrooge-flink = ;parsimonious-scrooge-flink/publishSigned
 
-alias publish-local-commons = ;+commons/publishLocal
+alias publish-local-commons = ;+parsimonious-commons/publishLocal
 
-alias publish-local-thrift-commons = ;+thrift-commons/publishLocal
+alias publish-local-thrift-commons = ;+parsimonious-thrift-commons/publishLocal
 
-alias publish-local-spark-commons = ;+spark-commons/publishLocal
+alias publish-local-spark-commons = ;+parsimonious-spark-commons/publishLocal
 
-alias publish-local-flink-commons = ;flink-commons/publishLocal
+alias publish-local-flink-commons = ;parsimonious-flink-commons/publishLocal
 
-alias publish-local-thrift-jackson = ;+thrift-jackson/publishLocal
+alias publish-local-thrift-jackson = ;+parsimonious-thrift-jackson/publishLocal
 
-alias publish-local-scrooge-commons = ;+scrooge-commons/publishLocal
+alias publish-local-scrooge-commons = ;+parsimonious-scrooge-commons/publishLocal
 
-alias publish-local-scrooge-jackson = ;+scrooge-jackson/publishLocal
+alias publish-local-scrooge-jackson = ;+parsimonious-scrooge-jackson/publishLocal
 
-alias publish-local-thrift-spark = ;+thrift-spark/publishLocal
+alias publish-local-thrift-spark = ;+parsimonious-thrift-spark/publishLocal
 
-alias publish-local-thrift-flink = ;thrift-flink/publishLocal
+alias publish-local-thrift-flink = ;parsimonious-thrift-flink/publishLocal
 
-alias publish-local-scrooge-spark = ;+scrooge-spark/publishLocal
+alias publish-local-scrooge-spark = ;+parsimonious-scrooge-spark/publishLocal
 
-alias publish-local-scrooge-flink = ;scrooge-flink/publishLocal
+alias publish-local-scrooge-flink = ;parsimonious-scrooge-flink/publishLocal
 
 alias build-all = ;build-commons ;build-spark-commons ;build-thrift-commons ;build-thrift-jackson ;build-thrift-spark ;build-scrooge-commons ;build-scrooge-jackson ;build-scrooge-spark ;build-flink-commons ;build-thrift-flink ;build-scrooge-flink
 
 alias publish-local-all = ;publish-local-commons ;publish-local-thrift-commons ;publish-local-spark-commons ;publish-local-thrift-jackson ;publish-local-thrift-spark ;publish-local-scrooge-commons ;publish-local-scrooge-jackson ;publish-local-scrooge-spark ;publish-local-flink-commons ;publish-local-thrift-flink ;publish-local-scrooge-flink
 
-alias publish-all = ;publish-commons ;publish-thrift-commons ;publish-spark-commons ;publish-thrift-jackson ;publish-thrift-spark ;publish-scrooge-commons ;publish-scrooge-jackson ;publish-scrooge-spark ;publish-flink-commons ;publish-thrift-flink ;publish-scrooge-flink
+alias publish-all = ;publish-commons ;publish-thrift-commons ;publish-spark-commons ;publish-thrift-jackson ;publish-thrift-spark ;publish-scrooge-commons ;publish-scrooge-jackson ;publish-scrooge-spark ;publish-flink-commons ;publish-thrift-flink ;publish-scrooge-flink ;sonatypeReleaseAll

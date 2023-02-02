@@ -12,7 +12,6 @@ val thriftMajorVersion = thriftVersion.substring(0, thriftVersion.lastIndexOf(".
 val sparkProfile = sys.env.getOrElse("SPARK_PROFILE", "spark3").toLowerCase()
 val flinkProfile = sys.env.getOrElse("FLINK_PROFILE", "flink1_13").toLowerCase()
 
-
 val commonSettings = Seq(
   githubOwner := "anskarl",
   githubRepository := "parsimonious",
@@ -26,6 +25,7 @@ val commonSettings = Seq(
   publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true),
   credentials ++= (if(releaseToSonatype) Seq(Credentials(Path.userHome / ".sbt" / "sonatype_credentials")) else Seq.empty),
   publishTo := (if(releaseToSonatype) sonatypePublishToBundle.value else githubPublishTo.value),
+  sonatypeProfileName := "com.github.anskarl",
   publishTo := {
     val nexus = "https://oss.sonatype.org/"
     if (isSnapshot.value) Some("snapshots" at nexus + "content/repositories/snapshots")
@@ -59,10 +59,10 @@ def thriftCmd(majorVersion: String): String = majorVersion match {
 }
 
 def module(name: String): Project =
-  Project(s"${name}", file(name))
+  Project(s"parsimonious-${name}", file(name))
     .settings(scalaVersion := DefaultScalaVersion)
     .settings(
-      organization := "com.github.anskarl.parsimonious",
+      organization := "com.github.anskarl",
       publishMavenStyle := true
     )
     .settings(

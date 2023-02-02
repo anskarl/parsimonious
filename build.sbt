@@ -35,7 +35,6 @@ val commonSettings = Seq(
     ScmInfo(url("https://github.com/anskarl/parsimonious"), "scm:git:git@github.com:anskarl/parsimonious.git")
   ),
   pomExtra :=
-    <url>https://github.com/anskarl</url>
       <licenses>
         <license>
           <name>Apache License Version 2.0</name>

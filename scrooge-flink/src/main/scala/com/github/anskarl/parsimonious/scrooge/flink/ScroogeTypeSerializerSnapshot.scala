@@ -21,7 +21,7 @@ class ScroogeTypeSerializerSnapshot[T <: ThriftStruct]() extends TypeSerializerS
 
   override def writeSnapshot(out: DataOutputView): Unit = out.writeUTF(_codec.metaData.structClassName)
   override def readSnapshot(readVersion: Int, in: DataInputView, userCodeClassLoader: ClassLoader): Unit = {
-    val _structClass = InstantiationUtil.resolveClassByName[T](in, userCodeClassLoader)
+    _structClass = InstantiationUtil.resolveClassByName[T](in, userCodeClassLoader)
     _codec = ThriftStructCodec.forStructClass(_structClass)
   }
 

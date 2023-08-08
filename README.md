@@ -3,7 +3,7 @@
 ├─┘├─┤├┬┘└─┐│││││ ││││││ ││ │└─┐
 ┴  ┴ ┴┴└─└─┘┴┴ ┴└─┘┘└┘┴└─┘└─┘└─┘
 ```
-_Parsimonious_ is a helper library for encoding/decoding Apache Thrift and Twitter Scrooge classes to Spark Dataframes, 
+_Parsimonious_ is a helper library for encoding/decoding Apache Thrift and Twitter Scrooge (experimental) classes to Spark Dataframes, 
 Jackson JSON and Apache Flink state serializers. 
 
   - The implementation for Spark is based on [airbnb-spark-thrift](https://github.com/airbnb/airbnb-spark-thrift/tree/nwparker/convV2).
@@ -12,7 +12,7 @@ Jackson JSON and Apache Flink state serializers.
 Important features:
 
   - Supports all Thrift types, including unions and binary types. 
-  - Supports both Twitter Scrooge and Apache Thrift generated classes.
+  - Supports both Apache Thrift and Twitter Scrooge (experimental) generated classes.
   - Supports nested and recursive structures. Please note, for Spark, recursive structures are being serialized to bytes.
   - For JSON, when a Thrift map does not have string type as a key (e.g., a struct) then _Parsimonious_ will convert it to a sequence of key, value tuples (the opposite during decoding to Thrift is also supported).
   
@@ -217,7 +217,7 @@ To decode from JSON back to Thrift POJO:
 val decoded: BasicDummy = JsonThriftConverter.convert(classOf[BasicDummy], encoded)
 ```
 
-### Scrooge Thrift with Apache Spark
+### Scrooge Thrift with Apache Spark (experimental)
 
 Create a Spark Dataframe:
 
@@ -293,7 +293,7 @@ val decodedInputSeq: Seq[BasicDummy] = dfRows
     .toSeq
 ```
 
-### Scrooge Thrift with Jackson for JSON support
+### Scrooge Thrift with Jackson for JSON support (experimental)
 
 Encode/Decode Scrooge generated classes to/from Jackson node:
 

@@ -25,9 +25,9 @@ object ScroogeHelpers {
       else if (typeClass == classOf[Double]) new TField(name, TType.DOUBLE, 0)
       else if (typeClass == classOf[String]) new TField(name, TType.STRING, 0)
       else if (typeClass == classOf[ByteBuffer]) new TField(name, TType.STRING, 0)
-      else if (typeClass == classOf[Seq[_]]) new TField(name, TType.LIST, 0)
-      else if (typeClass == classOf[Set[_]]) new TField(name, TType.SET, 0)
-      else if (typeClass == classOf[Map[_,_]]) new TField(name, TType.MAP, 0)
+      else if (typeClass == classOf[scala.collection.Seq[_]] || typeClass == classOf[Seq[_]]) new TField(name, TType.LIST, 0)
+      else if (typeClass == classOf[scala.collection.Set[_]] || typeClass == classOf[Set[_]]) new TField(name, TType.SET, 0)
+      else if (typeClass == classOf[scala.collection.Map[_,_]] || typeClass == classOf[Map[_,_]]) new TField(name, TType.MAP, 0)
       else if(classOf[ThriftEnum].isAssignableFrom(typeClass)) new TField(name, TType.ENUM, 0)
       else new TField(name, TType.STRUCT, 0)
 

@@ -55,11 +55,14 @@ object UnionBuilders {
           extract(Seq(keyThriftStructFieldInfo, valueThriftStructFieldInfo))
         case TType.STRUCT =>
           val valueStructClass = fieldInfo.manifest.runtimeClass.asInstanceOf[ThriftStructWithProduct]
-          UnionBuilders.extractThriftStruct(valueStructClass)
+          extractThriftStruct(valueStructClass)
         case TType.SET | TType.LIST =>
-          val valueManifest = fieldInfo.valueManifest.get
-          val valueThriftStructFieldInfo = ScroogeHelpers.getThriftStructFieldInfo(fieldInfo.tfield.name+"_values", valueManifest)
-          extractInner(valueThriftStructFieldInfo)
+          fieldInfo.valueManifest match {
+            case Some(valueManifest) =>
+              val valueThriftStructFieldInfo = ScroogeHelpers.getThriftStructFieldInfo(fieldInfo.tfield.name+"_values", valueManifest)
+              extractInner(valueThriftStructFieldInfo)
+            case None => Seq[UnionBuilderOpt](None)
+          }
         case _ => Seq[UnionBuilderOpt](None)
       }
 
